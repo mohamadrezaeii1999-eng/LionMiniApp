@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Lion AI PRO</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+
+<div class="header">
+
+<div class="logo">
+
+<div class="lion">
+🦁
+</div>
+
+<div>
+<h2>Lion AI PRO</h2>
+<span>AI Trading System</span>
+</div>
+
+</div>
+
+
+<div class="vip">
+VIP
+</div>
+
+
+</div>
+
+
+
+<div class="card balance-card">
+
+<p>
+💰 موجودی
+</p>
+
+<h1>
+$12,540
+</h1>
+
+<div class="green">
++18.6% سود امروز
+</div>
+
+</div>
+
+<div class="ai-grid">
+
+
+<div class="card ai-card">
+
+<h3>
+🤖 قدرت AI
+</h3>
+
+<div class="ai-number">
+92%
+</div>
+
+<p>
+تحلیل بازار فعال
+</p>
+
+</div>
+
+
+
+<div class="card signal-card">
+
+<h3>
+📡 سیگنال
+</h3>
+
+<div class="buy">
+BUY 🟢
+
+<div class="signal-power">
+<span></span>
+</div>
+
+<div class="risk">
+🟡 ریسک: کم | قدرت سیگنال: 92%
+
+<div class="last-analysis">
+
+🕒 آخرین تحلیل:
+
+<span>همین الان</span>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+<p>
+BTC / USDT
+</p>
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="card chart-card">
+
+<h3>
+📈 نمودار بازار
+</h3>
+
+<canvas id="marketChart"></canvas>
+
+<div class="card chart-card">
+<h3>💰 سود کل دلار</h3>
+<canvas id="profitChart"></canvas>
+</div>
+
+
+</div>
+
+<div class="small-grid">
+
+
+<div class="card small-card">
+
+<span>
+سودکل
+</span>
+
+<b class="green">
++24.8%
+</b>
+
+</div>
+
+
+
+<div class="card small-card">
+
+<span>
+📊 معاملات
+</span>
+
+<b>
+128
+</b>
+
+</div>
+
+
+
+<div class="card small-card">
+
+<span>
+🏆 برد
+</span>
+
+<b>
+89%
+</b>
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<div class="card auto-card">
+
+<div class="card wallet-card">
+
+<h3>💰 Wallet</h3>
+
+<div class="wallet-value">
+$0.00
+</div>
+
+<div class="wallet-info">
+
+<div class="card market-card">
+
+<h3>
+📊 Live Market
+</h3>
+
+<div class="market-row">
+<span>₿ BTC/USDT</span>
+<span class="market-price">$---</span>
+</div>
+
+<div class="market-row">
+<span>Ξ ETH/USDT</span>
+<span class="market-price">$---</span>
+</div>
+
+<div class="market-row">
+<span>🥇 XAU/USD</span>
+<span class="market-price">---</span>
+</div>
+
+<div class="market-row">
+<span>💵 EUR/USD</span>
+<span class="market-price">---</span>
+</div>
+
+</div>
+
+
+<span>📈 سود امروز 0%</span>
+
+<span>📊 معاملات 0</span>
+
+</div>
+
+</div>
+
+
+<h3>
+⚡ Auto Trading
+</h3>
+
+<p>
+وضعیت:
+<span class="green">
+فعال
+</span>
+</p>
+
+
+<button>
+شروع معامله خودکار
+</button>
+
+</div>
+
+<div class="bottom-menu">
+
+<div>
+🏠
+<br>
+خانه
+</div>
+
+
+<div>
+📈
+<br>
+تحلیل
+</div>
+
+
+<div>
+💼
+<br>
+کیف پول
+</div>
+
+
+<div>
+📜
+<br>
+معاملات
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<script>
+
+const ctx = document.getElementById('marketChart');
+
+
+new Chart(ctx, {
+
+type:'line',
+
+data:{
+
+labels:[
+'1','2','3','4','5','6','7'
+],
+
+
+datasets:[{
+
+data:[
+64000,
+64500,
+64200,
+65500,
+66200,
+67000,
+67540
+],
+
+
+borderColor:'#f5c542',
+
+backgroundColor:
+'rgba(245,197,66,0.15)',
+
+fill:true,
+
+tension:0.4
+
+}]
+
+
+},
+
+
+options:{
+
+maintainAspectRatio:false,
+
+responsive:true,
+
+
+plugins:{
+
+legend:{
+display:false
+}
+
+},
+
+
+scales:{
+
+x:{
+display:false
+},
+
+y:{
+display:false
+}
+
+}
+
+}
+
+
+});
+
+
+</script>
+
+<script src="app.js"></script>
+
+
+
+</body>
+
+</html>
+

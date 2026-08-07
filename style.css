@@ -1,0 +1,1015 @@
+*{
+box-sizing:border-box;
+font-family:tahoma,Arial;
+}
+
+
+body{
+
+margin:0;
+
+background:#050505;
+
+color:white;
+
+padding-bottom:90px;
+
+}
+
+
+
+.app{
+
+max-width:420px;
+
+margin:auto;
+
+padding:15px;
+
+}
+
+
+
+/* Header */
+
+.header{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+margin-bottom:15px;
+
+}
+
+
+
+.logo{
+
+display:flex;
+
+align-items:center;
+
+gap:10px;
+
+}
+
+
+.lion{
+
+font-size:40px;
+
+}
+
+
+.logo h2{
+
+margin:0;
+
+color:#f5c542;
+
+font-size:22px;
+
+}
+
+
+.logo span{
+
+font-size:11px;
+
+color:#999;
+
+}
+
+
+
+.vip{
+
+background:#f5c542;
+
+color:#000;
+
+padding:7px 15px;
+
+border-radius:20px;
+
+font-weight:bold;
+
+}
+
+
+
+/* کارت ها */
+
+.card{
+
+background:
+
+linear-gradient(
+
+145deg,
+
+rgba(255,255,255,.08),
+
+rgba(255,255,255,.02)
+
+);
+
+
+border:1px solid rgba(245,197,66,.25);
+
+
+border-radius:22px;
+
+
+padding:15px;
+
+
+margin-bottom:12px;
+
+
+backdrop-filter:blur(10px);
+
+}
+
+/* موجودی */
+
+.balance-card{
+
+text-align:center;
+
+}
+
+
+.balance-card h1{
+
+font-size:34px;
+
+color:#f5c542;
+
+margin:8px 0;
+
+}
+
+
+
+.green{
+
+color:#00ff88;
+
+font-weight:bold;
+
+}
+
+
+
+/* AI و سیگنال کنار هم */
+
+.ai-grid{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:10px;
+
+}
+
+
+
+.ai-card,
+.signal-card{
+
+text-align:center;
+
+}
+
+
+
+.ai-number{
+
+font-size:32px;
+
+color:#f5c542;
+
+font-weight:bold;
+
+margin:10px 0;
+
+}
+
+
+
+.buy{
+
+font-size:30px;
+
+color:#00ff88;
+
+font-weight:bold;
+
+margin:10px 0;
+
+}
+
+
+
+/* نمودار */
+
+.chart-card{
+
+height:250px;
+
+}
+
+
+#marketChart{
+
+height:190px !important;
+
+}
+
+
+
+/* سه آمار پایین */
+
+.small-grid{
+
+display:grid;
+
+grid-template-columns:repeat(3,1fr);
+
+gap:8px;
+
+}
+
+
+
+.small-card{
+
+text-align:center;
+
+padding:12px 5px;
+
+}
+
+
+
+.small-card span{
+
+font-size:12px;
+
+color:#aaa;
+
+}
+
+
+
+.small-card b{
+
+display:block;
+
+font-size:18px;
+
+margin-top:8px;
+
+}
+
+/* Auto Trading */
+
+.auto-card{
+
+text-align:center;
+
+}
+
+
+.auto-card button{
+
+background:#f5c542;
+
+border:none;
+
+border-radius:20px;
+
+padding:12px 25px;
+
+font-size:14px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+}
+
+
+
+/* منوی پایین */
+
+.bottom-menu{
+
+position:fixed;
+
+bottom:10px;
+
+left:50%;
+
+transform:translateX(-50%);
+
+
+width:92%;
+
+
+max-width:390px;
+
+
+background:rgba(10,10,10,.9);
+
+
+border:1px solid rgba(245,197,66,.25);
+
+
+border-radius:25px;
+
+
+display:flex;
+
+
+justify-content:space-around;
+
+
+padding:10px;
+
+
+z-index:1000;
+
+
+backdrop-filter:blur(15px);
+
+}
+
+
+
+.bottom-menu div{
+
+text-align:center;
+
+font-size:12px;
+
+color:#aaa;
+
+}
+
+
+
+/* موبایل کوچک */
+
+@media(max-width:350px){
+
+.ai-grid{
+
+grid-template-columns:1fr;
+
+}
+
+
+.chart-card{
+    height:230px;
+    display:flex;
+    flex-direction:column;
+}
+
+
+.chart-card h3{
+    margin-bottom:8px;
+}
+
+
+.chart-card canvas{
+
+    width:100% !important;
+
+    height:170px !important;
+
+    display:block;
+
+}
+.small-grid{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+
+.chart-card{
+    overflow:hidden;
+}
+
+
+#marketChart{
+    max-width:100%;
+    max-height:160px;
+}
+
+
+.chart-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.chart-row .chart-card{
+    height:190px;
+}
+
+.chart-row canvas{
+    width:100% !important;
+    height:130px !important;
+}
+
+.chart-card:nth-child(2){
+    margin-top:10px;
+}
+
+.ai-number{
+
+width:90px;
+
+height:90px;
+
+border-radius:50%;
+
+margin:15px auto;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:28px;
+
+font-weight:bold;
+
+color:#f5c542;
+
+border:3px solid #f5c542;
+
+background:rgba(245,197,66,.08);
+
+box-shadow:0 0 25px rgba(245,197,66,.35);
+
+}
+
+
+.ai-card{
+
+position:relative;
+
+overflow:hidden;
+
+}
+
+
+.ai-card:before{
+
+content:"AI ONLINE";
+
+position:absolute;
+
+top:8px;
+
+right:10px;
+
+font-size:10px;
+
+color:#00ff88;
+
+}
+
+
+.auto-card{
+
+background:
+linear-gradient(
+145deg,
+rgba(0,255,136,.12),
+rgba(255,255,255,.03)
+);
+
+border:1px solid rgba(0,255,136,.35);
+
+box-shadow:
+0 0 25px rgba(0,255,136,.15);
+
+}
+
+
+.auto-card h3{
+
+color:#00ff88;
+
+}
+
+
+.auto-card button{
+
+background:#00ff88;
+
+color:#000;
+
+box-shadow:
+0 0 15px rgba(0,255,136,.5);
+
+}
+
+
+.auto-card button:active{
+
+transform:scale(.95);
+
+}
+
+.status-live{
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:8px;
+
+font-size:12px;
+
+color:#00ff88;
+
+margin-top:10px;
+
+}
+
+
+.status-dot{
+
+width:8px;
+
+height:8px;
+
+border-radius:50%;
+
+background:#00ff88;
+
+box-shadow:0 0 12px #00ff88;
+
+animation:pulse 1.5s infinite;
+
+}
+
+
+@keyframes pulse{
+
+0%{
+opacity:1;
+}
+
+50%{
+opacity:.3;
+}
+
+100%{
+opacity:1;
+}
+
+}
+
+
+.auto-btn{
+
+width:90%;
+
+padding:14px;
+
+border-radius:18px;
+
+background:#00ff88;
+
+color:#000;
+
+font-weight:bold;
+
+font-size:16px;
+
+border:none;
+
+box-shadow:0 0 20px rgba(0,255,136,.4);
+
+}
+
+
+.auto-btn:hover{
+
+transform:scale(1.03);
+
+}
+
+
+.bot-status{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+background:rgba(0,255,136,.08);
+
+border:1px solid rgba(0,255,136,.3);
+
+border-radius:15px;
+
+padding:12px;
+
+margin-top:10px;
+
+font-size:13px;
+
+}
+
+
+.online-dot{
+
+width:9px;
+
+height:9px;
+
+background:#00ff88;
+
+border-radius:50%;
+
+display:inline-block;
+
+box-shadow:0 0 10px #00ff88;
+
+}
+
+.logo h2{
+
+font-size:26px;
+
+letter-spacing:1px;
+
+color:#f5c542;
+
+text-shadow:
+
+0 0 15px rgba(245,197,66,.6);
+
+}
+
+
+.lion{
+
+font-size:50px;
+
+filter:
+
+drop-shadow(0 0 12px rgba(245,197,66,.7));
+
+animation:
+
+lionGlow 2s infinite alternate;
+
+}
+
+
+@keyframes lionGlow{
+
+from{
+
+transform:scale(1);
+
+}
+
+
+to{
+
+transform:scale(1.08);
+
+}
+
+}
+
+
+.vip{
+
+box-shadow:
+
+0 0 15px rgba(245,197,66,.5);
+
+}
+
+.signal-card{
+
+background:
+linear-gradient(
+145deg,
+rgba(0,255,136,.12),
+rgba(255,255,255,.03)
+);
+
+border:1px solid rgba(0,255,136,.35);
+
+text-align:center;
+
+}
+
+
+.signal-card .buy{
+
+font-size:38px;
+
+color:#00ff88;
+
+text-shadow:
+
+0 0 15px rgba(0,255,136,.6);
+
+}
+
+.signal-power{
+
+margin-top:15px;
+
+background:rgba(255,255,255,.08);
+
+height:10px;
+
+border-radius:20px;
+
+overflow:hidden;
+
+}
+
+
+.signal-power span{
+
+display:block;
+
+height:100%;
+
+width:92%;
+
+background:#00ff88;
+
+border-radius:20px;
+
+box-shadow:0 0 15px #00ff88;
+
+}
+
+
+.risk{
+
+margin-top:10px;
+
+font-size:12px;
+
+color:#f5c542;
+
+}
+
+.last-analysis{
+
+margin-top:12px;
+
+font-size:12px;
+
+color:#aaa;
+
+display:flex;
+
+justify-content:center;
+
+gap:6px;
+
+}
+
+
+.last-analysis span{
+
+color:#f5c542;
+
+font-weight:bold;
+
+}
+
+.wallet-card{
+
+background:
+linear-gradient(
+145deg,
+rgba(245,197,66,.12),
+rgba(255,255,255,.03)
+);
+
+border:1px solid rgba(245,197,66,.35);
+
+}
+
+
+.wallet-value{
+
+font-size:28px;
+
+font-weight:bold;
+
+color:#f5c542;
+
+text-align:center;
+
+margin:10px;
+
+}
+
+
+.wallet-info{
+
+display:flex;
+
+justify-content:space-around;
+
+font-size:12px;
+
+color:#aaa;
+
+}
+
+
+.signal-green{
+    color:#00ff88;
+    text-shadow:0 0 15px #00ff88;
+}
+
+.signal-yellow{
+    color:#f5c542;
+    text-shadow:0 0 15px #f5c542;
+}
+
+.signal-red{
+    color:#ff4444;
+    text-shadow:0 0 15px #ff4444;
+}
+
+.signal-status{
+
+padding:8px 15px;
+
+border-radius:20px;
+
+font-weight:bold;
+
+display:inline-block;
+
+animation:pulseSignal 2s infinite;
+
+}
+
+
+@keyframes pulseSignal{
+
+0%{
+opacity:1;
+}
+
+50%{
+opacity:.6;
+}
+
+100%{
+opacity:1;
+}
+
+}
+
+.signal-power span{
+
+animation: signalMove 2s ease-in-out infinite;
+
+}
+
+
+@keyframes signalMove{
+
+0%{
+opacity:.7;
+transform:scaleX(.85);
+}
+
+50%{
+opacity:1;
+transform:scaleX(1);
+}
+
+100%{
+opacity:.7;
+transform:scaleX(.85);
+}
+
+}
+
+.power-high{
+    width:90%;
+    background:#00ff88;
+    box-shadow:0 0 15px #00ff88;
+}
+
+.power-mid{
+    width:60%;
+    background:#f5c542;
+    box-shadow:0 0 15px #f5c542;
+}
+
+.power-low{
+    width:30%;
+    background:#ff4444;
+    box-shadow:0 0 15px #ff4444;
+}
+
+
+.market-card{
+
+background:
+linear-gradient(
+145deg,
+rgba(255,255,255,.06),
+rgba(255,255,255,.02)
+);
+
+border:1px solid rgba(245,197,66,.25);
+
+}
+
+
+.market-row{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:10px 0;
+
+border-bottom:1px solid rgba(255,255,255,.08);
+
+}
+
+
+.market-price{
+
+color:#00ff88;
+
+font-weight:bold;
+
+}
+
+
+.price-up{
+
+color:#00ff88;
+
+font-weight:bold;
+
+}
+
+
+.price-down{
+
+color:#ff4444;
+
+font-weight:bold;
+
+}
+
+
+.price-flat{
+
+color:#f5c542;
+
+font-weight:bold;
+
+}
+
+
+.price-arrow{
+
+font-size:18px;
+
+margin-right:5px;
+
+}
+

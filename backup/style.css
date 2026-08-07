@@ -1,0 +1,145 @@
+*{
+    box-sizing:border-box;
+    font-family:Tahoma, Arial, sans-serif;
+}
+
+body{
+    margin:0;
+    background:#050912;
+    color:white;
+}
+
+.app{
+    max-width:430px;
+    margin:auto;
+    padding:20px;
+}
+
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.logo b{
+    color:#ffb800;
+}
+
+
+.user-card,
+.balance-card,
+.grid button{
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:18px;
+    backdrop-filter:blur(10px);
+}
+
+
+.user-card{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:15px;
+    margin-bottom:15px;
+}
+
+.avatar{
+    font-size:35px;
+}
+
+
+.user-card p{
+    color:#aaa;
+    margin:5px 0;
+}
+
+
+.balance-card{
+    padding:20px;
+    text-align:center;
+    margin-bottom:20px;
+}
+
+
+.balance-card p{
+    color:#aaa;
+}
+
+
+.balance-card h1{
+    font-size:38px;
+    margin:10px 0;
+}
+
+
+.profit{
+    color:#00e676;
+    font-size:20px;
+}
+
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+
+.grid button{
+    color:white;
+    padding:18px 5px;
+    font-size:16px;
+}
+
+
+.grid button:hover{
+    border-color:#ffb800;
+}
+
+
+nav{
+    position:fixed;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    width:90%;
+    max-width:400px;
+
+    display:flex;
+    justify-content:space-around;
+
+    background:#101722;
+    border-radius:20px;
+    padding:12px 5px;
+
+    border:1px solid #222;
+}
+
+
+nav span{
+    text-align:center;
+    font-size:12px;
+    color:#ccc;
+}
+
+
+.card a {
+    display: block;
+    color: #ffd700;
+    text-decoration: none;
+    font-size: 18px;
+    padding: 10px;
+}
+
+.card a:hover {
+    opacity: 0.8;
+}
+
