@@ -172,34 +172,62 @@ border-radius:0;margin:0;padding:10px 3px;font-size:11px
 <section id="markets" class="page">
 
 <div class="card">
-<div class="title">💱 بازارها</div>
+<div class="title">💱 بازارهای فارکس</div>
 
-<div class="market">
-<span>🇪🇺 یورو / دلار</span>
-<button onclick="selectMarket('EUR/USD')">انتخاب</button>
-</div>
+<div class="market"><span>🇪🇺 یورو / دلار</span><button onclick="selectMarket('EUR/USD')">انتخاب</button></div>
+<div class="market"><span>🇬🇧 پوند / دلار</span><button onclick="selectMarket('GBP/USD')">انتخاب</button></div>
+<div class="market"><span>🇯🇵 دلار / ین</span><button onclick="selectMarket('USD/JPY')">انتخاب</button></div>
+<div class="market"><span>🇨🇭 دلار / فرانک</span><button onclick="selectMarket('USD/CHF')">انتخاب</button></div>
+<div class="market"><span>🇦🇺 دلار استرالیا / دلار</span><button onclick="selectMarket('AUD/USD')">انتخاب</button></div>
+<div class="market"><span>🇨🇦 دلار / دلار کانادا</span><button onclick="selectMarket('USD/CAD')">انتخاب</button></div>
+<div class="market"><span>🇳🇿 دلار نیوزیلند / دلار</span><button onclick="selectMarket('NZD/USD')">انتخاب</button></div>
 
-<div class="market">
-<span>🇬🇧 پوند / دلار</span>
-<button onclick="notReady()">انتخاب</button>
-</div>
+<div class="market"><span>🇪🇺 یورو / پوند</span><button onclick="selectMarket('EUR/GBP')">انتخاب</button></div>
+<div class="market"><span>🇪🇺 یورو / ین</span><button onclick="selectMarket('EUR/JPY')">انتخاب</button></div>
+<div class="market"><span>🇪🇺 یورو / فرانک</span><button onclick="selectMarket('EUR/CHF')">انتخاب</button></div>
+<div class="market"><span>🇪🇺 یورو / دلار استرالیا</span><button onclick="selectMarket('EUR/AUD')">انتخاب</button></div>
+<div class="market"><span>🇪🇺 یورو / دلار کانادا</span><button onclick="selectMarket('EUR/CAD')">انتخاب</button></div>
+<div class="market"><span>🇪🇺 یورو / دلار نیوزیلند</span><button onclick="selectMarket('EUR/NZD')">انتخاب</button></div>
 
-<div class="market">
-<span>🇯🇵 دلار / ین</span>
-<button onclick="notReady()">انتخاب</button>
-</div>
+<div class="market"><span>🇬🇧 پوند / ین</span><button onclick="selectMarket('GBP/JPY')">انتخاب</button></div>
+<div class="market"><span>🇬🇧 پوند / فرانک</span><button onclick="selectMarket('GBP/CHF')">انتخاب</button></div>
+<div class="market"><span>🇬🇧 پوند / دلار استرالیا</span><button onclick="selectMarket('GBP/AUD')">انتخاب</button></div>
+<div class="market"><span>🇬🇧 پوند / دلار کانادا</span><button onclick="selectMarket('GBP/CAD')">انتخاب</button></div>
+<div class="market"><span>🇬🇧 پوند / دلار نیوزیلند</span><button onclick="selectMarket('GBP/NZD')">انتخاب</button></div>
 
-<div class="market">
-<span>🥇 طلا / دلار</span>
-<button onclick="notReady()">انتخاب</button>
-</div>
+<div class="market"><span>🇦🇺 دلار استرالیا / ین</span><button onclick="selectMarket('AUD/JPY')">انتخاب</button></div>
+<div class="market"><span>🇦🇺 دلار استرالیا / دلار کانادا</span><button onclick="selectMarket('AUD/CAD')">انتخاب</button></div>
+<div class="market"><span>🇦🇺 دلار استرالیا / فرانک</span><button onclick="selectMarket('AUD/CHF')">انتخاب</button></div>
+<div class="market"><span>🇦🇺 دلار استرالیا / نیوزیلند</span><button onclick="selectMarket('AUD/NZD')">انتخاب</button></div>
+
+<div class="market"><span>🇨🇦 دلار کانادا / ین</span><button onclick="selectMarket('CAD/JPY')">انتخاب</button></div>
+<div class="market"><span>🇨🇦 دلار کانادا / فرانک</span><button onclick="selectMarket('CAD/CHF')">انتخاب</button></div>
+
+<div class="market"><span>🇨🇭 فرانک / ین</span><button onclick="selectMarket('CHF/JPY')">انتخاب</button></div>
+
+<div class="market"><span>🇳🇿 دلار نیوزیلند / ین</span><button onclick="selectMarket('NZD/JPY')">انتخاب</button></div>
+<div class="market"><span>🇳🇿 دلار نیوزیلند / دلار کانادا</span><button onclick="selectMarket('NZD/CAD')">انتخاب</button></div>
+<div class="market"><span>🇳🇿 دلار نیوزیلند / فرانک</span><button onclick="selectMarket('NZD/CHF')">انتخاب</button></div>
+
+<div class="market"><span>🇹🇷 دلار / لیر ترکیه</span><button onclick="selectMarket('USD/TRY')">انتخاب</button></div>
+<div class="market"><span>🇿🇦 دلار / رند آفریقای جنوبی</span><button onclick="selectMarket('USD/ZAR')">انتخاب</button></div>
+<div class="market"><span>🇲🇽 دلار / پزو مکزیک</span><button onclick="selectMarket('USD/MXN')">انتخاب</button></div>
+<div class="market"><span>🇸🇬 دلار / دلار سنگاپور</span><button onclick="selectMarket('USD/SGD')">انتخاب</button></div>
+<div class="market"><span>🇭🇰 دلار / دلار هنگ‌کنگ</span><button onclick="selectMarket('USD/HKD')">انتخاب</button></div>
+<div class="market"><span>🇳🇴 دلار / کرون نروژ</span><button onclick="selectMarket('USD/NOK')">انتخاب</button></div>
+<div class="market"><span>🇸🇪 دلار / کرون سوئد</span><button onclick="selectMarket('USD/SEK')">انتخاب</button></div>
+<div class="market"><span>🇩🇰 دلار / کرون دانمارک</span><button onclick="selectMarket('USD/DKK')">انتخاب</button></div>
+<div class="market"><span>🇹🇷 یورو / لیر ترکیه</span><button onclick="selectMarket('EUR/TRY')">انتخاب</button></div>
+<div class="market"><span>🇸🇪 یورو / کرون سوئد</span><button onclick="selectMarket('EUR/SEK')">انتخاب</button></div>
+<div class="market"><span>🇳🇴 یورو / کرون نروژ</span><button onclick="selectMarket('EUR/NOK')">انتخاب</button></div>
+<div class="market"><span>🇹🇷 پوند / لیر ترکیه</span><button onclick="selectMarket('GBP/TRY')">انتخاب</button></div>
+
+<div class="market"><span>🥇 طلا / دلار</span><button onclick="selectMarket('XAU/USD')">انتخاب</button></div>
 
 </div>
 
 <div class="card">
-<div class="muted">
-بازار فعال
-</div>
+<div class="muted">بازار فعال</div>
 <div id="selectedMarket" class="title">EUR/USD</div>
 </div>
 
