@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-TWELVE_DATA_API_KEY = "YOUR_TWELVE_DATA_API_KEY"
+TWELVE_DATA_API_KEY = __import__("os").environ.get("TWELVE_DATA_API_KEY", "")
 
 def get_signal():
     url = "https://api.twelvedata.com/time_series"
