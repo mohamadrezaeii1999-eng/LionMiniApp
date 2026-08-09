@@ -1,6 +1,7 @@
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS
+from lion_real_engine import get_signal
 
 app = Flask(__name__)
 CORS(app)
@@ -14,11 +15,7 @@ def home():
 
 @app.get("/signal")
 def signal():
-    return jsonify({
-        "status": "ok",
-        "signal": "WAIT",
-        "message": "Lion AI PRO API is online"
-    })
+    return jsonify(get_signal())
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
