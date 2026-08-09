@@ -1,387 +1,282 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lion AI PRO</title>
 
-<link rel="stylesheet" href="style.css">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#070b12;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+.container{
+  max-width:520px;
+  margin:auto;
+  padding:20px;
+}
+.logo{
+  text-align:center;
+  font-size:34px;
+  font-weight:bold;
+  margin:15px 0 5px;
+}
+.sub{
+  text-align:center;
+  color:#8d99a8;
+  margin-bottom:25px;
+}
+.card{
+  background:#101722;
+  border:1px solid #1e2a39;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:14px;
+}
+.symbol{
+  font-size:20px;
+  font-weight:bold;
+}
+.price{
+  font-size:35px;
+  font-weight:bold;
+  margin-top:10px;
+}
+.signal{
+  text-align:center;
+  font-size:34px;
+  font-weight:bold;
+  padding:18px;
+  border-radius:15px;
+  margin:15px 0;
+}
+.buy{background:#063d2b;color:#27e59a}
+.sell{background:#45151b;color:#ff5263}
+.wait{background:#403510;color:#ffd45c}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.item{
+  background:#0b111a;
+  border-radius:12px;
+  padding:12px;
+}
+.label{
+  color:#8793a3;
+  font-size:13px;
+}
+.value{
+  margin-top:6px;
+  font-size:18px;
+  font-weight:bold;
+}
+button{
+  width:100%;
+  border:0;
+  border-radius:14px;
+  padding:15px;
+  background:#e9a91b;
+  color:#080b10;
+  font-size:17px;
+  font-weight:bold;
+  margin-top:10px;
+}
+.status{
+  text-align:center;
+  color:#8d99a8;
+  margin-top:12px;
+  font-size:13px;
+}
+.reason{
+  line-height:2;
+  color:#cbd5e1;
+}
+</style>
 </head>
-
 
 <body>
 
-<div class="app">
+<div class="container">
 
+<div class="logo">🦁 Lion AI PRO</div>
+<div class="sub">Real Market Intelligence</div>
 
-<div class="header">
+<div class="card">
 
-<div class="logo">
+<div class="symbol">EUR/USD · 5 MIN</div>
 
-<div class="lion">
-🦁
+<div id="price" class="price">--</div>
+
+<div id="signal" class="signal wait">
+WAIT
 </div>
 
-<div>
-<h2>Lion AI PRO</h2>
-<span>AI Trading System</span>
+<div class="grid">
+
+<div class="item">
+<div class="label">RSI</div>
+<div id="rsi" class="value">--</div>
 </div>
 
+<div class="item">
+<div class="label">Score</div>
+<div id="score" class="value">--</div>
 </div>
 
-
-<div class="vip">
-VIP
+<div class="item">
+<div class="label">Confidence</div>
+<div id="confidence" class="value">--</div>
 </div>
 
-
+<div class="item">
+<div class="label">MA10</div>
+<div id="ma10" class="value">--</div>
 </div>
 
-
-
-<div class="card balance-card">
-
-<p>
-💰 موجودی
-</p>
-
-<h1>
-$12,540
-</h1>
-
-<div class="green">
-+18.6% سود امروز
+<div class="item">
+<div class="label">MA30</div>
+<div id="ma30" class="value">--</div>
 </div>
 
+<div class="item">
+<div class="label">MACD</div>
+<div id="macd" class="value">--</div>
 </div>
 
-<div class="ai-grid">
-
-
-<div class="card ai-card">
-
-<h3>
-🤖 قدرت AI
-</h3>
-
-<div class="ai-number">
-92%
+<div class="item">
+<div class="label">Support</div>
+<div id="support" class="value">--</div>
 </div>
 
-<p>
-تحلیل بازار فعال
-</p>
-
-</div>
-
-
-
-<div class="card signal-card">
-
-<h3>
-📡 سیگنال
-</h3>
-
-<div class="buy" id="signal">WAIT 🟡
-
-<div id="confidence" class="signal-power">قدرت سیگنال: ---</div><div class="signal-power">
-<span></span>
-</div>
-
-<div class="risk">
-🟡 ریسک: کم | قدرت سیگنال: 92%
-
-<div id="analysis" class="last-analysis">
-
-🕒 آخرین تحلیل:
-
-<span>همین الان</span>
-
-</div>
-
-
-</div>
-
-
-</div>
-
-<p>
-BTC / USDT
-</p>
-
-</div>
-
-
-</div>
-
-
-
-
-<div class="card chart-card">
-
-<h3>
-📈 نمودار بازار
-</h3>
-
-<canvas id="marketChart"></canvas>
-
-<div class="card chart-card">
-<h3>💰 سود کل دلار</h3>
-<canvas id="profitChart"></canvas>
-</div>
-
-
-</div>
-
-<div class="small-grid">
-
-
-<div class="card small-card">
-
-<span>
-سودکل
-</span>
-
-<b class="green">
-+24.8%
-</b>
-
-</div>
-
-
-
-<div class="card small-card">
-
-<span>
-📊 معاملات
-</span>
-
-<b>
-128
-</b>
-
-</div>
-
-
-
-<div class="card small-card">
-
-<span>
-🏆 برد
-</span>
-
-<b>
-89%
-</b>
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-<div class="card auto-card">
-
-<div class="card wallet-card">
-
-<h3>💰 Wallet</h3>
-
-<div class="wallet-value">
-$0.00
-</div>
-
-<div class="wallet-info">
-
-<div class="card market-card">
-
-<h3>
-📊 Live Market
-</h3>
-
-<div class="market-row">
-<span>₿ BTC/USDT</span>
-<span class="market-price">$---</span>
-</div>
-
-<div class="market-row">
-<span>Ξ ETH/USDT</span>
-<span class="market-price">$---</span>
-</div>
-
-<div class="market-row">
-<span>🥇 XAU/USD</span>
-<span class="market-price">---</span>
-</div>
-
-<div class="market-row">
-<span>💵 EUR/USD</span>
-<span class="market-price">---</span>
+<div class="item">
+<div class="label">Resistance</div>
+<div id="resistance" class="value">--</div>
 </div>
 
 </div>
+</div>
 
+<div class="card">
+<div class="label">تحلیل Lion AI</div>
+<div id="analysis" class="reason">در حال دریافت تحلیل...</div>
+</div>
 
-<span>📈 سود امروز 0%</span>
+<button onclick="loadSignal()">🔄 بروزرسانی تحلیل</button>
 
-<span>📊 معاملات 0</span>
-
+<div id="status" class="status">
+در حال اتصال به موتور تحلیل...
 </div>
 
 </div>
-
-
-<h3>
-⚡ Auto Trading
-</h3>
-
-<p>
-وضعیت:
-<span class="green">
-فعال
-</span>
-</p>
-
-
-<button>
-شروع معامله خودکار
-</button>
-
-</div>
-
-<div class="bottom-menu">
-
-<div>
-🏠
-<br>
-خانه
-</div>
-
-
-<div>
-📈
-<br>
-تحلیل
-</div>
-
-
-<div>
-💼
-<br>
-کیف پول
-</div>
-
-
-<div>
-📜
-<br>
-معاملات
-</div>
-
-
-</div>
-
-
-</div>
-
-
-
 
 <script>
 
-const ctx = document.getElementById('marketChart');
+const API =
+"https://lionminiapp-production.up.railway.app/signal";
 
+async function loadSignal(){
 
-new Chart(ctx, {
+  const status =
+  document.getElementById("status");
 
-type:'line',
+  status.textContent =
+  "در حال دریافت داده واقعی بازار...";
 
-data:{
+  try{
 
-labels:[
-'1','2','3','4','5','6','7'
-],
+    const response =
+    await fetch(API,{
+      method:"GET",
+      cache:"no-store"
+    });
 
+    if(!response.ok){
+      throw new Error("HTTP "+response.status);
+    }
 
-datasets:[{
+    const data =
+    await response.json();
 
-data:[
-64000,
-64500,
-64200,
-65500,
-66200,
-67000,
-67540
-],
+    if(data.status !== "ok"){
+      throw new Error(
+        data.message || "API Error"
+      );
+    }
 
+    document.getElementById("price")
+      .textContent = data.price;
 
-borderColor:'#f5c542',
+    document.getElementById("rsi")
+      .textContent = data.rsi;
 
-backgroundColor:
-'rgba(245,197,66,0.15)',
+    document.getElementById("score")
+      .textContent = data.score;
 
-fill:true,
+    document.getElementById("confidence")
+      .textContent = data.confidence+"%";
 
-tension:0.4
+    document.getElementById("ma10")
+      .textContent = data.ma10;
 
-}]
+    document.getElementById("ma30")
+      .textContent = data.ma30;
 
+    document.getElementById("macd")
+      .textContent = data.macd;
 
-},
+    document.getElementById("support")
+      .textContent = data.support;
 
+    document.getElementById("resistance")
+      .textContent = data.resistance;
 
-options:{
+    const signal =
+    document.getElementById("signal");
 
-maintainAspectRatio:false,
+    signal.textContent =
+      data.signal;
 
-responsive:true,
+    signal.className =
+      "signal " +
+      (
+        data.signal === "BUY"
+        ? "buy"
+        : data.signal === "SELL"
+        ? "sell"
+        : "wait"
+      );
 
+    document.getElementById("analysis")
+      .textContent =
+      data.analysis || "تحلیل آماده است.";
 
-plugins:{
+    status.textContent =
+      "🟢 اتصال زنده · آخرین بروزرسانی موفق";
 
-legend:{
-display:false
+  }catch(error){
+
+    console.error(error);
+
+    document.getElementById("status")
+      .textContent =
+      "🔴 خطا در اتصال به API";
+
+    document.getElementById("analysis")
+      .textContent =
+      "اتصال به موتور تحلیل برقرار نشد.";
+  }
 }
 
-},
+loadSignal();
 
-
-scales:{
-
-x:{
-display:false
-},
-
-y:{
-display:false
-}
-
-}
-
-}
-
-
-});
-
+setInterval(loadSignal,60000);
 
 </script>
 
-<script src="app.js"></script>
-
-
-
 </body>
-
 </html>
-
