@@ -1,49 +1,40 @@
-const API = "/api";
+const API = "https://lionminiapp-production.up.railway.app";
 
 async function loadData() {
     try {
-        const [walletRes, signalRes, pricesRes] = await Promise.all([
-            fetch(`${API}/wallet`),
-            fetch(`${API}/signal`),
-            fetch(`${API}/prices`)
-        ]);
+        const response = await fetch(`${API}/signal`);
+        const data = await response.json();
 
-        const wallet = await walletRes.json();
-        const signal = await signalRes.json();
-        const prices = await pricesRes.json();
+        console.log("Lion AI:", data);
 
-        const result = signal.result || {};
+        const signalEl = document.getElementById("signal");
+        if (signalEl) {
+            signalEl.textContent = data.signal || "WAIT";
+        }
+
+        const confidence = document.getElementById("confidence");
+        if (confidence) {
+            confidence.textContent =
+                "قدرت سیگنال: " + (data.confidence ?? 0) + "%";
+        }
 
         const balance = document.getElementById("balance");
         if (balance) {
             balance.innerHTML =
-                "💵 دلار: " + Number(wallet.usd || 0).toFixed(2) +
-                "<br>📈 سود: " + Number(wallet.profit || 0).toFixed(2);
+                "💵 قیمت: " + (data.price ?? "---") +
+                "<br>📊 امتیاز: " + (data.score ?? 0);
         }
 
-        const signalEl = document.getElementById("signal");
-        if (signalEl) signalEl.innerHTML = result.action || "WAIT";
-
-        const confidence = document.getElementById("confidence");
-        if (confidence) {
-            confidence.innerHTML =
-                "قدرت سیگنال: " + (result.confidence ?? 0) + "%";
+        const analysis = document.getElementById("analysis");
+        if (analysis) {
+            analysis.textContent = data.analysis || "---";
         }
-
-        document.querySelectorAll(".market-price")[0].innerHTML =
-            "$" + (prices.BTC || "---");
-
-        document.querySelectorAll(".market-price")[1].innerHTML =
-            "$" + (prices.ETH || "---");
-
-        document.querySelectorAll(".market-price")[2].innerHTML =
-            "$" + (prices.XAU || "---");
-
-        document.querySelectorAll(".market-price")[3].innerHTML =
-            prices.EUR || "---";
 
     } catch (err) {
         console.error("Lion API Error:", err);
+
+        const signalEl = document.getElementById("signal");
+        if (signalEl) signalEl.textContent = "OFFLINE";
     }
 }
 
