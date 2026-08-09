@@ -3,158 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lion AI PRO</title>
+<title>شیر هوشمند | Lion AI PRO</title>
 
 <style>
 *{box-sizing:border-box}
 body{
-  margin:0;
-  background:#070b12;
-  color:#fff;
-  font-family:Arial,sans-serif;
+margin:0;background:#070b12;color:#fff;
+font-family:Tahoma,Arial,sans-serif;
 }
-.container{
-  max-width:520px;
-  margin:auto;
-  padding:20px;
-}
-.logo{
-  text-align:center;
-  font-size:34px;
-  font-weight:bold;
-  margin:15px 0 5px;
-}
-.sub{
-  text-align:center;
-  color:#8d99a8;
-  margin-bottom:25px;
-}
+.app{max-width:560px;margin:auto;padding:16px 14px 95px}
+.header{text-align:center;padding:14px 0 18px}
+.logo{font-size:32px;font-weight:900}
+.subtitle{color:#8d99a8;font-size:13px;margin-top:6px}
 .card{
-  background:#101722;
-  border:1px solid #1e2a39;
-  border-radius:18px;
-  padding:18px;
-  margin-bottom:14px;
+background:#101722;border:1px solid #202c3b;
+border-radius:18px;padding:17px;margin-bottom:13px;
 }
-.symbol{
-  font-size:20px;
-  font-weight:bold;
-}
-.price{
-  font-size:35px;
-  font-weight:bold;
-  margin-top:10px;
-}
+.title{font-size:18px;font-weight:800;margin-bottom:13px}
+.muted{color:#8996a6}
+.price{font-size:34px;font-weight:900;margin:8px 0}
 .signal{
-  text-align:center;
-  font-size:34px;
-  font-weight:bold;
-  padding:18px;
-  border-radius:15px;
-  margin:15px 0;
+border-radius:15px;padding:16px;text-align:center;
+font-size:28px;font-weight:900;margin:12px 0
 }
-.buy{background:#063d2b;color:#27e59a}
-.sell{background:#45151b;color:#ff5263}
-.wait{background:#403510;color:#ffd45c}
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-.item{
-  background:#0b111a;
-  border-radius:12px;
-  padding:12px;
-}
-.label{
-  color:#8793a3;
-  font-size:13px;
-}
-.value{
-  margin-top:6px;
-  font-size:18px;
-  font-weight:bold;
-}
+.buy{background:#063b2a;color:#31e69c}
+.sell{background:#45151b;color:#ff5b69}
+.wait{background:#413710;color:#ffd85a}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.box{background:#0a111a;border-radius:12px;padding:12px}
+.label{font-size:12px;color:#8793a3}
+.value{font-size:17px;font-weight:800;margin-top:6px}
+.reason{line-height:2;color:#d5dce5}
 button{
-  width:100%;
-  border:0;
-  border-radius:14px;
-  padding:15px;
-  background:#e9a91b;
-  color:#080b10;
-  font-size:17px;
-  font-weight:bold;
-  margin-top:10px;
+width:100%;border:0;border-radius:13px;
+padding:14px;margin-top:9px;
+font-family:inherit;font-size:15px;font-weight:800;
+background:#dca51c;color:#080b10
 }
-.status{
-  text-align:center;
-  color:#8d99a8;
-  margin-top:12px;
-  font-size:13px;
+button.dark{background:#182231;color:#fff}
+.page{display:none}
+.page.active{display:block}
+.market{
+display:flex;justify-content:space-between;align-items:center;
+padding:14px;background:#0b121c;border-radius:13px;
+margin-bottom:8px
 }
-.reason{
-  line-height:2;
-  color:#cbd5e1;
+.market button{width:auto;margin:0;padding:9px 14px}
+.nav{
+position:fixed;bottom:0;left:0;right:0;
+background:#0c131d;border-top:1px solid #202b39;
+display:flex;justify-content:center;z-index:10
 }
+.nav-inner{width:560px;display:grid;grid-template-columns:repeat(5,1fr)}
+.nav button{
+background:transparent;color:#8996a6;
+border-radius:0;margin:0;padding:10px 3px;font-size:11px
+}
+.nav button.active{color:#f0b72a}
+.error{color:#ff6875;text-align:center}
+.success{color:#36e39d;text-align:center}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
+<header class="header">
 <div class="logo">🦁 Lion AI PRO</div>
-<div class="sub">Real Market Intelligence</div>
+<div class="subtitle">سامانه هوشمند تحلیل بازار</div>
+</header>
+
+<!-- داشبورد -->
+<section id="dashboard" class="page active">
 
 <div class="card">
-
-<div class="symbol">EUR/USD · 5 MIN</div>
-
+<div class="title">📊 وضعیت بازار</div>
+<div class="muted">EUR/USD · تایم‌فریم ۵ دقیقه</div>
 <div id="price" class="price">--</div>
 
-<div id="signal" class="signal wait">
-WAIT
+<div id="signal" class="signal wait">در انتظار تحلیل</div>
+
+<div class="grid">
+<div class="box">
+<div class="label">امتیاز تحلیل</div>
+<div id="score" class="value">--</div>
 </div>
+
+<div class="box">
+<div class="label">اطمینان</div>
+<div id="confidence" class="value">--</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="title">🧠 خلاصه تحلیل</div>
+<div id="analysis" class="reason">
+در حال دریافت اطلاعات بازار...
+</div>
+</div>
+
+<button onclick="refreshAll()">🔄 بروزرسانی تحلیل</button>
+
+</section>
+
+
+<!-- تحلیل -->
+<section id="analysisPage" class="page">
+
+<div class="card">
+<div class="title">📈 تحلیل حرفه‌ای</div>
 
 <div class="grid">
 
-<div class="item">
+<div class="box">
+<div class="label">قیمت</div>
+<div id="aPrice" class="value">--</div>
+</div>
+
+<div class="box">
 <div class="label">RSI</div>
 <div id="rsi" class="value">--</div>
 </div>
 
-<div class="item">
-<div class="label">Score</div>
-<div id="score" class="value">--</div>
-</div>
-
-<div class="item">
-<div class="label">Confidence</div>
-<div id="confidence" class="value">--</div>
-</div>
-
-<div class="item">
-<div class="label">MA10</div>
+<div class="box">
+<div class="label">میانگین ۱۰</div>
 <div id="ma10" class="value">--</div>
 </div>
 
-<div class="item">
-<div class="label">MA30</div>
+<div class="box">
+<div class="label">میانگین ۳۰</div>
 <div id="ma30" class="value">--</div>
 </div>
 
-<div class="item">
+<div class="box">
 <div class="label">MACD</div>
 <div id="macd" class="value">--</div>
 </div>
 
-<div class="item">
-<div class="label">Support</div>
+<div class="box">
+<div class="label">قدرت سیگنال</div>
+<div id="aScore" class="value">--</div>
+</div>
+
+<div class="box">
+<div class="label">حمایت</div>
 <div id="support" class="value">--</div>
 </div>
 
-<div class="item">
-<div class="label">Resistance</div>
+<div class="box">
+<div class="label">مقاومت</div>
 <div id="resistance" class="value">--</div>
 </div>
 
@@ -162,115 +161,407 @@ WAIT
 </div>
 
 <div class="card">
-<div class="label">تحلیل Lion AI</div>
-<div id="analysis" class="reason">در حال دریافت تحلیل...</div>
+<div class="title">🔍 دلیل تصمیم هوش مصنوعی</div>
+<div id="reasons" class="reason">--</div>
 </div>
 
-<button onclick="loadSignal()">🔄 بروزرسانی تحلیل</button>
+</section>
 
-<div id="status" class="status">
-در حال اتصال به موتور تحلیل...
+
+<!-- بازارها -->
+<section id="markets" class="page">
+
+<div class="card">
+<div class="title">💱 بازارها</div>
+
+<div class="market">
+<span>🇪🇺 یورو / دلار</span>
+<button onclick="selectMarket('EUR/USD')">انتخاب</button>
+</div>
+
+<div class="market">
+<span>🇬🇧 پوند / دلار</span>
+<button onclick="notReady()">انتخاب</button>
+</div>
+
+<div class="market">
+<span>🇯🇵 دلار / ین</span>
+<button onclick="notReady()">انتخاب</button>
+</div>
+
+<div class="market">
+<span>🥇 طلا / دلار</span>
+<button onclick="notReady()">انتخاب</button>
 </div>
 
 </div>
+
+<div class="card">
+<div class="muted">
+بازار فعال
+</div>
+<div id="selectedMarket" class="title">EUR/USD</div>
+</div>
+
+</section>
+
+
+<!-- تاریخچه -->
+<section id="history" class="page">
+
+<div class="card">
+<div class="title">🧾 تاریخچه سیگنال‌ها</div>
+<div id="historyList">
+هنوز سیگنالی ثبت نشده است.
+</div>
+</div>
+
+<button class="dark" onclick="clearHistory()">
+🗑 پاک کردن تاریخچه
+</button>
+
+</section>
+
+
+<!-- تنظیمات -->
+<section id="settings" class="page">
+
+<div class="card">
+<div class="title">⚙️ تنظیمات</div>
+
+<div class="box">
+<div class="label">وضعیت اتصال</div>
+<div id="connection" class="value">در حال بررسی...</div>
+</div>
+
+<button onclick="refreshAll()">
+🔄 بررسی دوباره اتصال
+</button>
+
+<button class="dark" onclick="showInfo()">
+ℹ️ درباره Lion AI PRO
+</button>
+
+</div>
+
+</section>
+
+<div id="globalStatus" class="success">
+در حال اتصال...
+</div>
+
+</div>
+
+
+<!-- منوی پایین -->
+<nav class="nav">
+<div class="nav-inner">
+
+<button id="nav-dashboard" class="active"
+onclick="showPage('dashboard',this)">
+🏠<br>داشبورد
+</button>
+
+<button id="nav-analysis"
+onclick="showPage('analysisPage',this)">
+📊<br>تحلیل
+</button>
+
+<button id="nav-markets"
+onclick="showPage('markets',this)">
+💱<br>بازارها
+</button>
+
+<button id="nav-history"
+onclick="showPage('history',this)">
+🧾<br>تاریخچه
+</button>
+
+<button id="nav-settings"
+onclick="showPage('settings',this)">
+⚙️<br>تنظیمات
+</button>
+
+</div>
+</nav>
+
 
 <script>
 
 const API =
 "https://lionminiapp-production.up.railway.app/signal";
 
+let lastData=null;
+
+
+function showPage(id,button){
+
+document.querySelectorAll(".page")
+.forEach(x=>x.classList.remove("active"));
+
+document.getElementById(id)
+.classList.add("active");
+
+document.querySelectorAll(".nav button")
+.forEach(x=>x.classList.remove("active"));
+
+button.classList.add("active");
+}
+
+
+function translateSignal(signal){
+
+if(signal==="BUY") return "خرید";
+
+if(signal==="SELL") return "فروش";
+
+return "انتظار";
+}
+
+
+function signalClass(signal){
+
+if(signal==="BUY") return "buy";
+
+if(signal==="SELL") return "sell";
+
+return "wait";
+}
+
+
 async function loadSignal(){
 
-  const status =
-  document.getElementById("status");
+const status=
+document.getElementById("globalStatus");
 
-  status.textContent =
-  "در حال دریافت داده واقعی بازار...";
+status.textContent=
+"در حال دریافت تحلیل واقعی بازار...";
 
-  try{
+try{
 
-    const response =
-    await fetch(API,{
-      method:"GET",
-      cache:"no-store"
-    });
+const response=
+await fetch(API,{
+cache:"no-store"
+});
 
-    if(!response.ok){
-      throw new Error("HTTP "+response.status);
-    }
+if(!response.ok)
+throw new Error("خطای سرور");
 
-    const data =
-    await response.json();
+const data=
+await response.json();
 
-    if(data.status !== "ok"){
-      throw new Error(
-        data.message || "API Error"
-      );
-    }
+if(data.status!=="ok")
+throw new Error(data.message||"خطای تحلیل");
 
-    document.getElementById("price")
-      .textContent = data.price;
+lastData=data;
 
-    document.getElementById("rsi")
-      .textContent = data.rsi;
+document.getElementById("price")
+.textContent=data.price;
 
-    document.getElementById("score")
-      .textContent = data.score;
+document.getElementById("aPrice")
+.textContent=data.price;
 
-    document.getElementById("confidence")
-      .textContent = data.confidence+"%";
+document.getElementById("score")
+.textContent=data.score;
 
-    document.getElementById("ma10")
-      .textContent = data.ma10;
+document.getElementById("aScore")
+.textContent=data.score;
 
-    document.getElementById("ma30")
-      .textContent = data.ma30;
+document.getElementById("confidence")
+.textContent=data.confidence+"%";
 
-    document.getElementById("macd")
-      .textContent = data.macd;
+document.getElementById("rsi")
+.textContent=data.rsi;
 
-    document.getElementById("support")
-      .textContent = data.support;
+document.getElementById("ma10")
+.textContent=data.ma10;
 
-    document.getElementById("resistance")
-      .textContent = data.resistance;
+document.getElementById("ma30")
+.textContent=data.ma30;
 
-    const signal =
-    document.getElementById("signal");
+document.getElementById("macd")
+.textContent=data.macd;
 
-    signal.textContent =
-      data.signal;
+document.getElementById("support")
+.textContent=data.support;
 
-    signal.className =
-      "signal " +
-      (
-        data.signal === "BUY"
-        ? "buy"
-        : data.signal === "SELL"
-        ? "sell"
-        : "wait"
-      );
+document.getElementById("resistance")
+.textContent=data.resistance;
 
-    document.getElementById("analysis")
-      .textContent =
-      data.analysis || "تحلیل آماده است.";
+const signal=
+document.getElementById("signal");
 
-    status.textContent =
-      "🟢 اتصال زنده · آخرین بروزرسانی موفق";
+signal.textContent=
+translateSignal(data.signal);
 
-  }catch(error){
+signal.className=
+"signal "+signalClass(data.signal);
 
-    console.error(error);
+document.getElementById("analysis")
+.textContent=
+data.analysis||"تحلیل آماده است.";
 
-    document.getElementById("status")
-      .textContent =
-      "🔴 خطا در اتصال به API";
+document.getElementById("reasons")
+.textContent=
+(data.reasons||[]).join(" | ");
 
-    document.getElementById("analysis")
-      .textContent =
-      "اتصال به موتور تحلیل برقرار نشد.";
-  }
+document.getElementById("connection")
+.textContent=
+"🟢 متصل و فعال";
+
+status.textContent=
+"🟢 تحلیل واقعی با موفقیت دریافت شد";
+
+saveHistory(data);
+
+}catch(error){
+
+console.error(error);
+
+status.textContent=
+"🔴 اتصال به موتور تحلیل برقرار نشد";
+
+document.getElementById("connection")
+.textContent=
+"🔴 قطع";
+
 }
+
+}
+
+
+function refreshAll(){
+
+loadSignal();
+
+}
+
+
+function selectMarket(symbol){
+
+document.getElementById("selectedMarket")
+.textContent=symbol;
+
+alert(
+"بازار "+symbol+
+" انتخاب شد. تحلیل زنده همین بازار در مرحله بعد فعال می‌شود."
+);
+
+showPage(
+"analysisPage",
+document.getElementById("nav-analysis")
+);
+
+}
+
+
+function saveHistory(data){
+
+const old=
+JSON.parse(localStorage.getItem("lion_history")||"[]");
+
+const item={
+time:new Date().toLocaleString("fa-IR"),
+signal:data.signal,
+price:data.price,
+score:data.score,
+confidence:data.confidence
+};
+
+if(
+old.length===0||
+old[0].price!==item.price
+){
+
+old.unshift(item);
+
+localStorage.setItem(
+"lion_history",
+JSON.stringify(old.slice(0,20))
+);
+}
+
+renderHistory();
+
+}
+
+
+function renderHistory(){
+
+const list=
+JSON.parse(localStorage.getItem("lion_history")||"[]");
+
+const box=
+document.getElementById("historyList");
+
+if(!list.length){
+
+box.textContent=
+"هنوز سیگنالی ثبت نشده است.";
+
+return;
+}
+
+box.innerHTML=
+list.map(x=>`
+
+<div class="box" style="margin-bottom:8px">
+
+<div>
+${x.signal==="BUY"?"🟢 خرید":
+x.signal==="SELL"?"🔴 فروش":"🟡 انتظار"}
+</div>
+
+<div class="label">
+قیمت: ${x.price}
+&nbsp; | &nbsp;
+امتیاز: ${x.score}
+&nbsp; | &nbsp;
+اطمینان: ${x.confidence}%
+</div>
+
+<div class="label">
+${x.time}
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function clearHistory(){
+
+localStorage.removeItem("lion_history");
+
+renderHistory();
+
+}
+
+
+function notReady(){
+
+alert(
+"این بازار در نسخه بعدی به موتور تحلیل زنده متصل می‌شود."
+);
+
+}
+
+
+function showInfo(){
+
+alert(
+"Lion AI PRO\n\n"+
+"سامانه تحلیل هوشمند بازار\n"+
+"داده زنده + تحلیل تکنیکال\n"+
+"نسخه آزمایشی"
+);
+
+}
+
+
+renderHistory();
 
 loadSignal();
 
