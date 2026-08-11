@@ -1,106 +1,172 @@
 const API = "https://lionminiapp-production.up.railway.app";
 
 let selectedSymbol = "EUR/USD";
+let lastData = null;
 
-function selectMarket(symbol) {
-    selectedSymbol = symbol;
+const SIGNAL_TEXT = {
+    BUY: "خرید",
+    SELL: "فروش",
+    WAIT: "انتظار"
+};
 
-    const selected = document.getElementById("selectedMarket");
-    if (selected) {
-        selected.textContent = symbol;
+const SIGNAL_CLASS = {
+    BUY: "buy",
+    SELL: "sell",
+    WAIT: "wait"
+};
+
+async function loadSignal() {
+    const status = document.getElementById("globalStatus");
+
+    if (status) {
+        status.textContent = "در حال دریافت تحلیل واقعی بازار...";
     }
 
-    loadData();
-}
-
-async function loadData() {
     try {
-        const url = `${API}/signal?symbol=${encodeURIComponent(selectedSymbol)}`;
+        const response = await fetch(
+            `${API}/signal?symbol=${encodeURIComponent(selectedSymbol)}`,
+            {
+                cache: "no-store"
+            }
+        );
 
-        const response = await fetch(url);
         const data = await response.json();
 
         console.log("🦁 Lion AI:", selectedSymbol, data);
 
-        const signalEl = document.getElementById("signal");
-        if (signalEl) {
-            const signals = {
-                BUY: "خرید",
-                SELL: "فروش",
-                WAIT: "انتظار"
-            };
-
-            signalEl.textContent = signals[data.signal] || data.signal || "انتظار";
+        if (!response.ok || data.status !== "ok") {
+            throw new Error(data.message || data.error || "خطای تحلیل");
         }
 
-        const confidence = document.getElementById("confidence");
-        if (confidence) {
-            confidence.textContent =
-                "قدرت سیگنال: " + (data.confidence ?? 0) + "%";
-        }
+        lastData = data;
 
-        const balance = document.getElementById("balance");
-        if (balance) {
-            balance.innerHTML =
-                "💵 قیمت: " + (data.price ?? "---") +
-                "<br>📊 امتیاز: " + (data.score ?? 0);
+        setText("selectedMarket", data.symbol || selectedSymbol);
+        setText("price", data.price ?? "---");
+        setText("aPrice", data.price ?? "---");
+        setText("score", data.score ?? "---");
+        setText("aScore", data.score ?? "---");
+        setText("confidence", data.confidence != null ? data.confidence + "%" : "---");
+        setText("rsi", data.rsi ?? "---");
+        setText("ma10", data.ma10 ?? "---");
+        setText("ma30", data.ma30 ?? "---");
+        setText("macd", data.macd ?? "---");
+        setText("support", data.support ?? "---");
+        setText("resistance", data.resistance ?? "---");
+
+        const signal = document.getElementById("signal");
+
+        if (signal) {
+            signal.textContent =
+                SIGNAL_TEXT[data.signal] || data.signal || "انتظار";
+
+            signal.className =
+                "signal " +
+                (SIGNAL_CLASS[data.signal] || "wait");
         }
 
         const analysis = document.getElementById("analysis");
+
         if (analysis) {
-            analysis.textContent = data.analysis || "---";
+            analysis.textContent =
+                data.analysis ||
+                "تحلیل چند تایم‌فریمی بازار آماده است.";
         }
 
         const reasons = document.getElementById("reasons");
+
         if (reasons) {
-            if (Array.isArray(data.reasons)) {
+            if (Array.isArray(data.reasons) && data.reasons.length) {
                 reasons.innerHTML = data.reasons
-                    .map(reason => "• " + reason)
+                    .map(reason => `• ${escapeHtml(reason)}`)
                     .join("<br>");
             } else {
-                reasons.textContent = data.analysis || "---";
+                reasons.textContent = "دلیل خاصی ثبت نشده است.";
             }
         }
 
-        const price = document.getElementById("price");
-        if (price) {
-            price.textContent = data.price ?? "---";
+        setText("connection", "🟢 متصل و فعال");
+
+        if (status) {
+            status.textContent =
+                "🟢 تحلیل واقعی بازار با موفقیت دریافت شد";
         }
 
-        const rsi = document.getElementById("rsi");
-        if (rsi) {
-            rsi.textContent = data.rsi ?? "---";
+    } catch (error) {
+
+        console.error("🦁 Lion API Error:", error);
+
+        setText("connection", "🔴 قطع");
+
+        if (status) {
+            status.textContent =
+                "🔴 اتصال به موتور تحلیل برقرار نشد";
         }
 
-        const ma10 = document.getElementById("ma10");
-        if (ma10) {
-            ma10.textContent = data.ma10 ?? "---";
-        }
+        const signal = document.getElementById("signal");
 
-        const ma30 = document.getElementById("ma30");
-        if (ma30) {
-            ma30.textContent = data.ma30 ?? "---";
-        }
-
-        const support = document.getElementById("support");
-        if (support) {
-            support.textContent = data.support ?? "---";
-        }
-
-        const resistance = document.getElementById("resistance");
-        if (resistance) {
-            resistance.textContent = data.resistance ?? "---";
-        }
-
-    } catch (err) {
-        console.error("Lion API Error:", err);
-
-        const signalEl = document.getElementById("signal");
-        if (signalEl) {
-            signalEl.textContent = "آفلاین";
+        if (signal) {
+            signal.textContent = "آفلاین";
+            signal.className = "signal wait";
         }
     }
 }
 
-loadData();
-setInterval(loadData, 10000);
+
+function selectMarket(symbol) {
+
+    selectedSymbol = symbol;
+
+    setText("selectedMarket", symbol);
+
+    const analysisButton =
+        document.getElementById("nav-analysis");
+
+    if (
+        typeof showPage === "function" &&
+        analysisButton
+    ) {
+        showPage("analysisPage", analysisButton);
+    }
+
+    loadSignal();
+}
+
+
+function refreshAll() {
+    loadSignal();
+}
+
+
+function setText(id, value) {
+
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    loadSignal();
+
+    setInterval(loadSignal, 30000);
+
+});
+
+
+window.selectMarket = selectMarket;
+window.refreshAll = refreshAll;
+window.loadSignal = loadSignal;
