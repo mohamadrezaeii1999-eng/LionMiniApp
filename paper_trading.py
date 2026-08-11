@@ -36,7 +36,8 @@ def get_wallet():
         "balance": round(data["balance"], 2),
         "equity": round(data["balance"] + floating_pnl, 2),
         "open_positions": len(data["open_positions"]),
-        "total_trades": len(data["trades"])
+        "total_trades": len(data["trades"]),
+        "positions": data["open_positions"]
     }
 
 
