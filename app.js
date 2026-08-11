@@ -259,3 +259,114 @@ document.addEventListener("DOMContentLoaded", function() {
     loadMarkets();
     loadSignal();
 });
+
+
+async function scanMarkets() {
+    const status = document.getElementById("opportunitiesStatus");
+    const list = document.getElementById("opportunitiesList");
+    const button = document.getElementById("scanButton");
+
+    if (status) {
+        status.textContent = "🦁 در حال اسکن بازارها...";
+    }
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "⏳ در حال اسکن...";
+    }
+
+    try {
+        const response = await fetch(
+            `${API}/scan`,
+            {
+                cache: "no-store"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "ok") {
+            throw new Error(
+                data.message ||
+                data.error ||
+                "خطای اسکن بازارها"
+            );
+        }
+
+        if (status) {
+            status.textContent =
+                `🟢 ${data.successful} بازار بررسی شده`;
+        }
+
+        if (!list) {
+            return;
+        }
+
+        const opportunities = data.opportunities || [];
+
+        if (!opportunities.length) {
+            list.innerHTML =
+                '<div class="muted">⏳ هنوز سیگنال خرید یا فروش قوی پیدا نشده است.</div>';
+            return;
+        }
+
+        list.innerHTML = opportunities.map(item => {
+            const signal = item.signal || "WAIT";
+
+            const signalText = {
+                BUY: "خرید",
+                SELL: "فروش",
+                WAIT: "انتظار"
+            }[signal] || signal;
+
+            const signalClass = {
+                BUY: "buy",
+                SELL: "sell",
+                WAIT: "wait"
+            }[signal] || "wait";
+
+            return `
+                <div
+                    class="opportunity ${signalClass}"
+                    onclick="selectMarket('${item.symbol}')">
+
+                    <div>
+                        <strong>🦁 ${item.symbol}</strong>
+                        <div class="muted">
+                            ${signalText}
+                        </div>
+                    </div>
+
+                    <div class="opportunity-data">
+                        <strong>${item.confidence}%</strong>
+                        <span>اطمینان</span>
+                    </div>
+
+                    <div class="opportunity-data">
+                        <strong>${item.score}</strong>
+                        <span>قدرت</span>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+    } catch (error) {
+        console.error("SCAN ERROR:", error);
+
+        if (status) {
+            status.textContent =
+                "🔴 خطا در اسکن بازارها";
+        }
+
+        if (list) {
+            list.innerHTML =
+                '<div class="muted">اتصال به موتور اسکن برقرار نشد.</div>';
+        }
+
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.textContent = "🔄 اسکن بازارها";
+        }
+    }
+}
