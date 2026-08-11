@@ -471,46 +471,114 @@ def analyze(symbol=DEFAULT_SYMBOL):
         min(100, round(raw_score))
     )
 
-    # Strong signal threshold
-    if final_score >= 65 and bullish >= 2:
-        signal = "BUY"
+    # ============================================================
+    # Lion AI PRO - Smart Signal Decision
+    # ============================================================
 
-    elif final_score <= -65 and bearish >= 2:
-        signal = "SELL"
-
-    else:
-        signal = "WAIT"
-
-    # Resistance/support entry filter
     entry = five["price"]
 
-    distance_to_resistance = (
-        abs(five["resistance"] - entry) / entry
+    # فاصله نرمال‌شده تا حمایت و مقاومت
+    atr = max(float(five.get("atr", 0)), entry * 0.0001)
+
+    resistance_distance = max(
+        0,
+        five["resistance"] - entry
     )
 
-    distance_to_support = (
-        abs(entry - five["support"]) / entry
+    support_distance = max(
+        0,
+        entry - five["support"]
     )
 
-    if signal == "BUY" and distance_to_resistance < 0.0005:
-        signal = "WAIT"
-        reasons.append("ورود خرید بیش از حد نزدیک مقاومت است")
+    # فاصله نسبت به ATR
+    resistance_atr = resistance_distance / atr
+    support_atr = support_distance / atr
 
-    if signal == "SELL" and distance_to_support < 0.0005:
-        signal = "WAIT"
-        reasons.append("ورود فروش بیش از حد نزدیک حمایت است")
+    # ============================================================
+    # Signal candidates
+    # ============================================================
+
+    buy_candidate = (
+        final_score >= 65
+        and bullish >= 2
+    )
+
+    sell_candidate = (
+        final_score <= -65
+        and bearish >= 2
+    )
+
+    signal = "WAIT"
+
+    # ============================================================
+    # BUY
+    # ============================================================
+
+    # ============================================================
+    # Smart Support / Resistance Filter
+    # ============================================================
+
+    # سیگنال‌های خیلی قوی اجازه ورود با فاصله کمتر را دارند،
+    # ولی اگر قیمت واقعاً به سطح چسبیده باشد، ورود ممنوع است.
+    strong_buy = (
+        final_score >= 80
+        and bullish == 3
+        and confidence >= 80
+    )
+
+    strong_sell = (
+        final_score <= -80
+        and bearish == 3
+        and confidence >= 80
+    )
+
+    if buy_candidate:
+
+        # سیگنال معمولی: حداقل 0.35 ATR فاصله
+        # سیگنال خیلی قوی: حداقل 0.15 ATR فاصله
+        minimum_resistance_atr = 0.15 if strong_buy else 0.35
+
+        if resistance_atr < minimum_resistance_atr:
+            reasons.append("مقاومت بیش از حد نزدیک است")
+            signal = "WAIT"
+        else:
+            signal = "BUY"
+
+    # ============================================================
+    # SELL
+    # ============================================================
+
+    elif sell_candidate:
+
+        # سیگنال معمولی: حداقل 0.35 ATR فاصله
+        # سیگنال خیلی قوی: حداقل 0.15 ATR فاصله
+        minimum_support_atr = 0.15 if strong_sell else 0.35
+
+        if support_atr < minimum_support_atr:
+            reasons.append("حمایت بیش از حد نزدیک است")
+            signal = "WAIT"
+        else:
+            signal = "SELL"
+
+    # ============================================================
+    # Confidence
+    # ============================================================
 
     confidence = min(
         95,
         round(50 + abs(final_score) * 0.45, 1)
     )
 
-    # Lower confidence when timeframes disagree
-    if bullish != 3 and bearish != 3:
+    # کاهش اعتماد فقط زمانی که تایم‌فریم‌ها واقعاً اختلاف دارند
+    if bullish > 0 and bearish > 0:
         confidence = max(
             50,
             round(confidence - 7.5, 1)
         )
+
+    # ============================================================
+    # Trade levels
+    # ============================================================
 
     stop_loss = None
     take_profit_1 = None
@@ -520,7 +588,7 @@ def analyze(symbol=DEFAULT_SYMBOL):
     if signal == "BUY":
 
         stop_loss = min(
-            entry - five["atr"] * 1.5,
+            entry - atr * 1.5,
             five["support"]
         )
 
@@ -534,7 +602,7 @@ def analyze(symbol=DEFAULT_SYMBOL):
     elif signal == "SELL":
 
         stop_loss = max(
-            entry + five["atr"] * 1.5,
+            entry + atr * 1.5,
             five["resistance"]
         )
 
