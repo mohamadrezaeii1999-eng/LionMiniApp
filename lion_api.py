@@ -368,18 +368,35 @@ def auto_scanner_worker():
     while AUTO_SCAN_ENABLED:
         try:
             with app.test_request_context():
+                # اول فقط یک جفت‌ارز را اسکن کن
+                scan_response = scan()
+
+                try:
+                    scan_data = scan_response.get_json()
+                    print(
+                        "SCANNED:",
+                        scan_data.get("batch", []),
+                        "successful=",
+                        scan_data.get("successful", 0),
+                        "errors=",
+                        scan_data.get("failed", 0)
+                    )
+                except Exception:
+                    print("SCAN COMPLETED")
+
+                # سپس از نتایج ذخیره‌شده برای Paper Trading استفاده کن
                 result = paper_auto()
 
                 try:
                     data = result.get_json()
                     print(
-                        "AUTO SCAN:",
+                        "AUTO PAPER:",
                         data.get("action"),
                         data.get("message", ""),
                         data.get("wallet", {})
                     )
                 except Exception:
-                    print("AUTO SCAN COMPLETED")
+                    print("AUTO PAPER COMPLETED")
 
         except Exception as exc:
             print(f"AUTO SCANNER ERROR: {exc}")
