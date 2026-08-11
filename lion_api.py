@@ -117,16 +117,27 @@ def scan():
 
     total_markets = len(FOREX_PAIRS)
 
-    # بازارهای این Batch
+    if total_markets == 0:
+        return jsonify({
+            "status": "ok",
+            "engine": "Lion AI PRO V3.7",
+            "scanned": 0,
+            "batch_size": 0,
+            "batch": [],
+            "successful": 0,
+            "failed": 0,
+            "cached_results": 0,
+            "results": [],
+            "opportunities": []
+        })
+
     batch = []
 
     for _ in range(min(SCAN_BATCH_SIZE, total_markets)):
         symbol = FOREX_PAIRS[SCAN_INDEX]
         batch.append(symbol)
-
         SCAN_INDEX = (SCAN_INDEX + 1) % total_markets
 
-    # تحلیل فقط بازارهای Batch فعلی
     for symbol in batch:
         try:
             result = analyze(symbol)
@@ -145,16 +156,18 @@ def scan():
             try:
                 score = float(result.get("score", 0))
             except (TypeError, ValueError):
-                score = 0
+                score = 0.0
 
             try:
                 confidence = float(result.get("confidence", 0))
             except (TypeError, ValueError):
-                confidence = 0
+                confidence = 0.0
+
+            signal = str(result.get("signal", "WAIT")).upper()
 
             SCAN_RESULTS[symbol] = {
                 "symbol": symbol,
-                "signal": result.get("signal", "WAIT"),
+                "signal": signal,
                 "score": score,
                 "confidence": confidence,
                 "price": result.get("price"),
@@ -162,38 +175,31 @@ def scan():
                 "reasons": result.get("reasons", [])
             }
 
-            # اگر موفق شد، خطای قبلی آن حذف شود.
             SCAN_ERRORS.pop(symbol, None)
 
         except Exception as exc:
             print(f"SCAN ERROR {symbol}: {exc}")
             SCAN_ERRORS[symbol] = str(exc)
 
-    # فقط BUY / SELL
     opportunities = [
-        item
-        for item in SCAN_RESULTS.values()
-        if item["signal"] in ("BUY", "SELL")
+        item for item in SCAN_RESULTS.values()
+        if item.get("signal") in ("BUY", "SELL")
     ]
 
     opportunities.sort(
         key=lambda item: (
-            abs(item["score"]),
-            item["confidence"]
+            abs(float(item.get("score", 0))),
+            float(item.get("confidence", 0))
         ),
         reverse=True
     )
 
-    successful = len(SCAN_RESULTS)
-    failed = len(SCAN_ERRORS)
-
-    # تمام نتایج موفق اسکن، حتی WAIT، برای نمایش در رابط کاربری
     all_results = list(SCAN_RESULTS.values())
 
     all_results.sort(
         key=lambda item: (
-            abs(item.get("score", 0)),
-            item.get("confidence", 0)
+            abs(float(item.get("score", 0))),
+            float(item.get("confidence", 0))
         ),
         reverse=True
     )
@@ -204,13 +210,13 @@ def scan():
         "scanned": total_markets,
         "batch_size": len(batch),
         "batch": batch,
-        "successful": successful,
-        "failed": failed,
-        "cached_results": successful,
+        "successful": len(SCAN_RESULTS),
+        "failed": len(SCAN_ERRORS),
+        "cached_results": len(SCAN_RESULTS),
+        "errors": SCAN_ERRORS,
         "results": all_results,
         "opportunities": opportunities[:10]
     })
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
