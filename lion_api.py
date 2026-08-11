@@ -350,25 +350,47 @@ def paper_auto():
 
 
 
+
 # ============================================================
-# AUTO PAPER TRADING WORKER
+# REAL AUTO SCANNER + PAPER TRADING WORKER
 # ============================================================
 
 import threading
 import time
 
-def auto_paper_worker():
-    while True:
+AUTO_SCAN_INTERVAL = 60
+AUTO_SCAN_ENABLED = True
+
+
+def auto_scanner_worker():
+    print("AUTO SCANNER WORKER STARTED")
+
+    while AUTO_SCAN_ENABLED:
         try:
             with app.test_request_context():
-                paper_auto()
+                result = paper_auto()
+
+                try:
+                    data = result.get_json()
+                    print(
+                        "AUTO SCAN:",
+                        data.get("action"),
+                        data.get("message", ""),
+                        data.get("wallet", {})
+                    )
+                except Exception:
+                    print("AUTO SCAN COMPLETED")
+
         except Exception as exc:
-            print(f"AUTO PAPER WORKER ERROR: {exc}")
-        time.sleep(60)
+            print(f"AUTO SCANNER ERROR: {exc}")
+
+        time.sleep(AUTO_SCAN_INTERVAL)
+
 
 threading.Thread(
-    target=auto_paper_worker,
-    daemon=True
+    target=auto_scanner_worker,
+    daemon=True,
+    name="auto-paper-scanner"
 ).start()
 
 
