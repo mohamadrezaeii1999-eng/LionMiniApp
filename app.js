@@ -450,6 +450,6 @@ function toggleAutoScan() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    startAutoScan();
+    updateAutoScanButton();
 });
 
