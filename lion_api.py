@@ -99,61 +99,80 @@ def signal():
         }), 500
 
 
+
+# ------------------------------------------------------------
+# Lion AI PRO V3.7 - Batch Forex Scanner
+# هر بار فقط 2 بازار تحلیل می‌شود تا API محدود نشود.
+# ------------------------------------------------------------
+
+SCAN_BATCH_SIZE = 2
+SCAN_INDEX = 0
+SCAN_RESULTS = {}
+SCAN_ERRORS = {}
+
+
 @app.get("/scan")
 def scan():
-    results = []
-    errors = []
+    global SCAN_INDEX
 
-    for symbol in FOREX_PAIRS:
+    total_markets = len(FOREX_PAIRS)
+
+    # بازارهای این Batch
+    batch = []
+
+    for _ in range(min(SCAN_BATCH_SIZE, total_markets)):
+        symbol = FOREX_PAIRS[SCAN_INDEX]
+        batch.append(symbol)
+
+        SCAN_INDEX = (SCAN_INDEX + 1) % total_markets
+
+    # تحلیل فقط بازارهای Batch فعلی
+    for symbol in batch:
         try:
             result = analyze(symbol)
 
             if not isinstance(result, dict):
-                errors.append({
-                    "symbol": symbol,
-                    "error": "Invalid analysis response"
-                })
+                SCAN_ERRORS[symbol] = "Invalid analysis response"
                 continue
 
             if result.get("status") == "error":
-                errors.append({
-                    "symbol": symbol,
-                    "error": result.get("error", "Analysis error")
-                })
+                SCAN_ERRORS[symbol] = result.get(
+                    "message",
+                    result.get("error", "Analysis error")
+                )
                 continue
 
-            signal_value = result.get("signal", "WAIT")
+            try:
+                score = float(result.get("score", 0))
+            except (TypeError, ValueError):
+                score = 0
 
             try:
-                score_num = float(result.get("score", 0))
+                confidence = float(result.get("confidence", 0))
             except (TypeError, ValueError):
-                score_num = 0
+                confidence = 0
 
-            try:
-                confidence_num = float(result.get("confidence", 0))
-            except (TypeError, ValueError):
-                confidence_num = 0
-
-            results.append({
+            SCAN_RESULTS[symbol] = {
                 "symbol": symbol,
-                "signal": signal_value,
-                "score": score_num,
-                "confidence": confidence_num,
+                "signal": result.get("signal", "WAIT"),
+                "score": score,
+                "confidence": confidence,
                 "price": result.get("price"),
                 "analysis": result.get("analysis", ""),
                 "reasons": result.get("reasons", [])
-            })
+            }
+
+            # اگر موفق شد، خطای قبلی آن حذف شود.
+            SCAN_ERRORS.pop(symbol, None)
 
         except Exception as exc:
             print(f"SCAN ERROR {symbol}: {exc}")
+            SCAN_ERRORS[symbol] = str(exc)
 
-            errors.append({
-                "symbol": symbol,
-                "error": str(exc)
-            })
-
+    # فقط BUY / SELL
     opportunities = [
-        item for item in results
+        item
+        for item in SCAN_RESULTS.values()
         if item["signal"] in ("BUY", "SELL")
     ]
 
@@ -165,14 +184,19 @@ def scan():
         reverse=True
     )
 
+    successful = len(SCAN_RESULTS)
+    failed = len(SCAN_ERRORS)
+
     return jsonify({
         "status": "ok",
         "engine": "Lion AI PRO V3.7",
-        "scanned": len(FOREX_PAIRS),
-        "successful": len(results),
-        "failed": len(errors),
-        "opportunities": opportunities[:10],
-        "errors": errors
+        "scanned": total_markets,
+        "batch_size": len(batch),
+        "batch": batch,
+        "successful": successful,
+        "failed": failed,
+        "cached_results": successful,
+        "opportunities": opportunities[:10]
     })
 
 
