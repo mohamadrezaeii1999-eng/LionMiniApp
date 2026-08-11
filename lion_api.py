@@ -304,7 +304,7 @@ def paper_auto():
     score = float(best.get("score", 0))
     confidence = float(best.get("confidence", 0))
 
-    if abs(score) < 65 or confidence < 65:
+    if abs(score) < 45 or confidence < 55:
         return jsonify({
             "status": "ok",
             "mode": "auto_paper",
