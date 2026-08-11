@@ -109,6 +109,29 @@ SCAN_BATCH_SIZE = 1
 SCAN_INDEX = 0
 SCAN_RESULTS = {}
 SCAN_ERRORS = {}
+LAST_SCAN_SYMBOL = None
+LAST_SCAN_TIME = None
+AUTO_SCANNER_STATUS = "starting"
+
+
+@app.get("/paper/auto/status")
+def auto_scanner_status():
+    return jsonify({
+        "status": "ok",
+        "scanner": {
+            "enabled": AUTO_SCAN_ENABLED if "AUTO_SCAN_ENABLED" in globals() else False,
+            "worker_status": AUTO_SCANNER_STATUS,
+            "batch_size": SCAN_BATCH_SIZE,
+            "total_markets": len(FOREX_PAIRS),
+            "scanned_results": len(SCAN_RESULTS),
+            "errors": len(SCAN_ERRORS),
+            "last_symbol": LAST_SCAN_SYMBOL,
+            "last_scan_time": LAST_SCAN_TIME
+        },
+        "results": list(SCAN_RESULTS.values()),
+        "errors": SCAN_ERRORS
+    })
+
 
 
 @app.get("/scan")
@@ -373,9 +396,17 @@ def auto_scanner_worker():
 
                 try:
                     scan_data = scan_response.get_json()
+
+                    global LAST_SCAN_SYMBOL, LAST_SCAN_TIME, AUTO_SCANNER_STATUS
+
+                    batch = scan_data.get("batch", [])
+                    LAST_SCAN_SYMBOL = batch[-1] if batch else None
+                    LAST_SCAN_TIME = time.time()
+                    AUTO_SCANNER_STATUS = "running"
+
                     print(
                         "SCANNED:",
-                        scan_data.get("batch", []),
+                        batch,
                         "successful=",
                         scan_data.get("successful", 0),
                         "errors=",
