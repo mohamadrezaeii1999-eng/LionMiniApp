@@ -449,6 +449,11 @@ function toggleAutoScan() {
     }
 }
 
+window.startAutoScan = startAutoScan;
+window.stopAutoScan = stopAutoScan;
+window.toggleAutoScan = toggleAutoScan;
+window.scanMarkets = scanMarkets;
+
 document.addEventListener("DOMContentLoaded", () => {
     updateAutoScanButton();
 });
