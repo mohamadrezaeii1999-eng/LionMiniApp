@@ -113,24 +113,23 @@ async function loadSignal() {
 
 
 function selectMarket(symbol) {
-
     selectedSymbol = symbol;
 
-    setText("selectedMarket", symbol);
+    const selected = document.getElementById("selectedMarket");
+    if (selected) {
+        selected.textContent = symbol;
+    }
 
-    const analysisButton =
-        document.getElementById("nav-analysis");
-
-    if (
-        typeof showPage === "function" &&
-        analysisButton
-    ) {
-        showPage("analysisPage", analysisButton);
+    const analysisPage = document.getElementById("analysisPage");
+    if (analysisPage) {
+        document.querySelectorAll(".page").forEach(page => {
+            page.classList.remove("active");
+        });
+        analysisPage.classList.add("active");
     }
 
     loadSignal();
 }
-
 
 function refreshAll() {
     loadSignal();
