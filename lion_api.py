@@ -239,6 +239,117 @@ def paper_check():
 def paper_reset():
     return jsonify(reset_wallet())
 
+
+# ============================================================
+# AUTO PAPER TRADING
+# ============================================================
+
+from paper_trading import get_wallet, open_trade, check_positions, reset_wallet
+
+@app.route("/paper/auto")
+def paper_auto():
+    global SCAN_INDEX
+
+    wallet = get_wallet()
+
+    # اول پوزیشن‌های قبلی را با قیمت‌های موجود بررسی کن
+    prices = {
+        symbol: item.get("price")
+        for symbol, item in SCAN_RESULTS.items()
+        if item.get("price") is not None
+    }
+
+    check = check_positions(prices)
+    wallet = get_wallet()
+
+    # اگر معامله باز داریم، معامله جدید باز نکن
+    if wallet.get("open_positions", 0) > 0:
+        return jsonify({
+            "status": "ok",
+            "mode": "auto_paper",
+            "action": "HOLD",
+            "message": "یک معامله Paper باز است",
+            "wallet": wallet,
+            "closed": check.get("closed", [])
+        })
+
+    # فقط سیگنال‌های واقعی BUY/SELL
+    opportunities = [
+        x for x in SCAN_RESULTS.values()
+        if x.get("signal") in ("BUY", "SELL")
+        and x.get("price") is not None
+    ]
+
+    opportunities.sort(
+        key=lambda x: (
+            abs(float(x.get("score", 0))),
+            float(x.get("confidence", 0))
+        ),
+        reverse=True
+    )
+
+    if not opportunities:
+        return jsonify({
+            "status": "ok",
+            "mode": "auto_paper",
+            "action": "WAIT",
+            "message": "فعلاً فرصت مناسب پیدا نشد",
+            "wallet": wallet,
+            "closed": check.get("closed", [])
+        })
+
+    best = opportunities[0]
+
+    # برای امنیت Paper Trading فقط وقتی قدرت سیگنال کافی است
+    score = float(best.get("score", 0))
+    confidence = float(best.get("confidence", 0))
+
+    if abs(score) < 65 or confidence < 65:
+        return jsonify({
+            "status": "ok",
+            "mode": "auto_paper",
+            "action": "WAIT",
+            "message": "سیگنال هنوز قدرت کافی ندارد",
+            "candidate": best,
+            "wallet": wallet,
+            "closed": check.get("closed", [])
+        })
+
+    symbol = best["symbol"]
+    signal = best["signal"]
+    entry = float(best["price"])
+
+    # چون بعضی نتایج اسکن ممکن است SL/TP نداشته باشند،
+    # برای Paper از ATR استفاده می‌کنیم.
+    atr = float(best.get("atr") or entry * 0.0005)
+
+    if signal == "BUY":
+        stop_loss = entry - atr * 1.5
+        take_profit = entry + atr * 2.25
+    else:
+        stop_loss = entry + atr * 1.5
+        take_profit = entry - atr * 2.25
+
+    trade = open_trade(
+        symbol,
+        signal,
+        entry,
+        stop_loss,
+        take_profit,
+        amount=2.0
+    )
+
+    return jsonify({
+        "status": "ok",
+        "mode": "auto_paper",
+        "action": "OPEN" if trade.get("status") == "ok" else "ERROR",
+        "trade": trade,
+        "wallet": get_wallet(),
+        "closed": check.get("closed", [])
+    })
+
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
 
