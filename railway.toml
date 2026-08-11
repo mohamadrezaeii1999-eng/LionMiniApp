@@ -1,2 +1,2 @@
 [deploy]
-startCommand = "gunicorn --bind 0.0.0.0:$PORT lion_api:app"
+startCommand = "gunicorn --workers 1 --threads 2 --bind 0.0.0.0:$PORT lion_api:app"
