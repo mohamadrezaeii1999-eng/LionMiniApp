@@ -443,3 +443,26 @@ function stopAutoScan() {
 document.addEventListener("DOMContentLoaded", () => {
     startAutoScan();
 });
+
+
+function toggleAutoScan() {
+    const button =
+        document.getElementById("autoScanButton");
+
+    if (autoScanTimer) {
+        stopAutoScan();
+
+        if (button) {
+            button.textContent =
+                "🔴 شروع اسکن خودکار";
+        }
+
+    } else {
+        startAutoScan();
+
+        if (button) {
+            button.textContent =
+                "🟢 توقف اسکن خودکار";
+        }
+    }
+}
