@@ -187,6 +187,17 @@ def scan():
     successful = len(SCAN_RESULTS)
     failed = len(SCAN_ERRORS)
 
+    # تمام نتایج موفق اسکن، حتی WAIT، برای نمایش در رابط کاربری
+    all_results = list(SCAN_RESULTS.values())
+
+    all_results.sort(
+        key=lambda item: (
+            abs(item.get("score", 0)),
+            item.get("confidence", 0)
+        ),
+        reverse=True
+    )
+
     return jsonify({
         "status": "ok",
         "engine": "Lion AI PRO V3.7",
@@ -196,6 +207,7 @@ def scan():
         "successful": successful,
         "failed": failed,
         "cached_results": successful,
+        "results": all_results,
         "opportunities": opportunities[:10]
     })
 
