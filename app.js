@@ -353,57 +353,65 @@ async function scanMarkets() {
 
     try {
         const response = await fetch(
-            `${API}/scan`,
+            `${API}/scan?t=${Date.now()}`,
             {
+                method: "GET",
                 cache: "no-store"
             }
         );
 
-        const data = await response.json();
+        const text = await response.text();
 
-        if (!response.ok || data.status !== "ok") {
+        let data;
+
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
             throw new Error(
-                data.message ||
-                data.error ||
-                "خطای اسکن بازارها"
+                "پاسخ API قابل خواندن نیست: " + text.slice(0, 150)
             );
         }
 
+        console.log("🦁 SCAN RESPONSE:", data);
+
+        if (data.status !== "ok") {
+            throw new Error(
+                data.message ||
+                data.error ||
+                "خطای موتور اسکن"
+            );
+        }
+
+        const successful = Number(data.successful || 0);
+        const failed = Number(data.failed || 0);
+        const scanned = Number(data.scanned || 0);
+
         if (status) {
             status.textContent =
-                `🟢 اسکن شد: ${data.successful} بازار | ` +
-                `❌ خطا: ${data.failed || 0}`;
+                `🟢 اسکن انجام شد | ${successful} بازار موفق | ${failed} خطا | از ${scanned} بازار`;
         }
 
         if (!list) {
             return;
         }
 
+        const opportunities = Array.isArray(data.opportunities)
+            ? data.opportunities
+            : [];
+
         /*
-         * بک‌اند به صورت Batch بازارها را بررسی می‌کند.
-         * opportunities فقط BUY/SELL است.
-         * برای نمایش نتیجه واقعی اسکن، خود batch را هم نمایش می‌دهیم.
+         * اگر BUY/SELL پیدا شد
          */
+        if (opportunities.length > 0) {
 
-        const opportunities = data.opportunities || [];
-        const batch = data.batch || [];
+            list.innerHTML = opportunities.map(item => {
 
-        let html = "";
-
-        if (opportunities.length) {
-            html += `
-                <div class="muted" style="margin-bottom:10px;">
-                    🔥 فرصت‌های پیدا شده
-                </div>
-            `;
-
-            html += opportunities.map(item => {
                 const signal = item.signal || "WAIT";
 
                 const signalText = {
-                    BUY: "🟢 خرید",
-                    SELL: "🔴 فروش",
-                    WAIT: "🟡 انتظار"
+                    BUY: "خرید",
+                    SELL: "فروش",
+                    WAIT: "انتظار"
                 }[signal] || signal;
 
                 const signalClass = {
@@ -412,108 +420,109 @@ async function scanMarkets() {
                     WAIT: "wait"
                 }[signal] || "wait";
 
+                const confidence =
+                    item.confidence != null
+                        ? Number(item.confidence).toFixed(1)
+                        : "—";
+
+                const score =
+                    item.score != null
+                        ? Number(item.score).toFixed(1)
+                        : "—";
+
+                const price =
+                    item.price != null
+                        ? item.price
+                        : "—";
+
                 return `
                     <div
                         class="opportunity ${signalClass}"
                         onclick="selectMarket('${item.symbol}')"
+                        style="cursor:pointer;"
                     >
                         <div>
                             <strong>🦁 ${item.symbol}</strong>
+
                             <div class="muted">
                                 ${signalText}
                             </div>
-                        </div>
 
-                        <div class="opportunity-data">
-                            <strong>${item.confidence}%</strong>
-                            <span>اطمینان</span>
-                        </div>
-
-                        <div class="opportunity-data">
-                            <strong>${item.score}</strong>
-                            <span>قدرت</span>
-                        </div>
-                    </div>
-                `;
-            }).join("");
-        }
-
-        if (batch.length) {
-            html += `
-                <div class="muted" style="margin-top:14px;margin-bottom:8px;">
-                    📊 نتیجه بازارهای بررسی‌شده
-                </div>
-            `;
-
-            html += batch.map(symbol => {
-                const item = opportunities.find(
-                    x => x.symbol === symbol
-                );
-
-                if (item) {
-                    return "";
-                }
-
-                return `
-                    <div
-                        class="opportunity wait"
-                        onclick="selectMarket('${symbol}')"
-                    >
-                        <div>
-                            <strong>🦁 ${symbol}</strong>
                             <div class="muted">
-                                🟡 WAIT
+                                قیمت: ${price}
                             </div>
                         </div>
 
                         <div class="opportunity-data">
-                            <strong>—</strong>
+                            <strong>${confidence}%</strong>
                             <span>اطمینان</span>
                         </div>
 
                         <div class="opportunity-data">
-                            <strong>—</strong>
+                            <strong>${score}</strong>
                             <span>قدرت</span>
                         </div>
                     </div>
                 `;
             }).join("");
+
+            return;
         }
 
-        if (!html) {
-            html = `
-                <div class="muted">
-                    ⏳ هنوز نتیجه قابل نمایش از اسکن دریافت نشده است.
-                </div>
-            `;
-        }
+        /*
+         * وقتی هنوز BUY/SELL قوی پیدا نشده
+         */
+        list.innerHTML = `
+            <div class="muted" style="padding:12px;">
+                ⏳ فعلاً فرصت BUY یا SELL قوی پیدا نشد.
+            </div>
 
-        list.innerHTML = html;
+            <div class="muted" style="padding:8px 12px;font-size:12px;">
+                🦁 اسکن مرحله‌ای فعال است.
+                بازارهای بیشتری در اسکن‌های بعدی بررسی می‌شوند.
+            </div>
+        `;
 
     } catch (error) {
-        console.error("SCAN ERROR:", error);
+
+        console.error("🦁 SCAN ERROR:", error);
 
         if (status) {
             status.textContent =
-                "🔴 خطا در اسکن بازارها";
+                "🔴 خطا در اتصال به موتور اسکن";
         }
 
         if (list) {
             list.innerHTML = `
-                <div class="muted">
-                    ❌ اتصال به موتور اسکن برقرار نشد.
+                <div class="muted" style="padding:12px;">
+                    🔴 خطا در دریافت نتیجه اسکن
                 </div>
+
+                <div
+                    class="muted"
+                    style="padding:8px 12px;font-size:12px;direction:ltr;text-align:left;"
+                >
+                    ${String(error.message || error)}
+                </div>
+
+                <button
+                    class="scan-button"
+                    onclick="scanMarkets()"
+                    style="margin-top:10px;"
+                >
+                    🔄 تلاش دوباره
+                </button>
             `;
         }
 
     } finally {
+
         if (button) {
             button.disabled = false;
             button.textContent = "🔄 اسکن بازارها";
         }
     }
 }
-
 
 // ------------------------------------------------------------
 // Lion AI PRO - Auto Forex Scanner
