@@ -370,3 +370,76 @@ async function scanMarkets() {
         }
     }
 }
+
+
+// ------------------------------------------------------------
+// Lion AI PRO - Auto Forex Scanner
+// ------------------------------------------------------------
+
+let autoScanTimer = null;
+let autoScanRunning = false;
+
+async function autoScanOnce() {
+    if (autoScanRunning) {
+        return;
+    }
+
+    autoScanRunning = true;
+
+    try {
+        await scanMarkets();
+    } catch (error) {
+        console.error("AUTO SCAN ERROR:", error);
+    } finally {
+        autoScanRunning = false;
+    }
+}
+
+function startAutoScan() {
+    if (autoScanTimer) {
+        return;
+    }
+
+    console.log("🦁 Lion Auto Scanner Started");
+
+    // اولین اسکن
+    autoScanOnce();
+
+    // هر 70 ثانیه یک Batch جدید
+    autoScanTimer = setInterval(
+        autoScanOnce,
+        70000
+    );
+
+    const status =
+        document.getElementById("opportunitiesStatus");
+
+    if (status) {
+        status.textContent =
+            "🟢 اسکن خودکار فعال است";
+    }
+}
+
+function stopAutoScan() {
+    if (!autoScanTimer) {
+        return;
+    }
+
+    clearInterval(autoScanTimer);
+    autoScanTimer = null;
+
+    console.log("🦁 Lion Auto Scanner Stopped");
+
+    const status =
+        document.getElementById("opportunitiesStatus");
+
+    if (status) {
+        status.textContent =
+            "⏸ اسکن خودکار متوقف شد";
+    }
+}
+
+// شروع خودکار بعد از آماده شدن صفحه
+document.addEventListener("DOMContentLoaded", () => {
+    startAutoScan();
+});
