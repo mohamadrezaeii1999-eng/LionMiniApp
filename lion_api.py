@@ -350,6 +350,28 @@ def paper_auto():
 
 
 
+# ============================================================
+# AUTO PAPER TRADING WORKER
+# ============================================================
+
+import threading
+import time
+
+def auto_paper_worker():
+    while True:
+        try:
+            with app.test_request_context():
+                paper_auto()
+        except Exception as exc:
+            print(f"AUTO PAPER WORKER ERROR: {exc}")
+        time.sleep(60)
+
+threading.Thread(
+    target=auto_paper_worker,
+    daemon=True
+).start()
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
 
