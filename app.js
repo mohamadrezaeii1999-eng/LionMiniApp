@@ -395,74 +395,61 @@ async function autoScanOnce() {
     }
 }
 
+function updateAutoScanButton() {
+    const button =
+        document.getElementById("autoScanButton");
+
+    if (!button) {
+        return;
+    }
+
+    if (autoScanTimer) {
+        button.textContent =
+            "🟢 توقف اسکن خودکار";
+    } else {
+        button.textContent =
+            "🔴 شروع اسکن خودکار";
+    }
+}
+
 function startAutoScan() {
     if (autoScanTimer) {
+        updateAutoScanButton();
         return;
     }
 
     console.log("🦁 Lion Auto Scanner Started");
 
-    // اولین اسکن
     autoScanOnce();
 
-    // هر 70 ثانیه یک Batch جدید
     autoScanTimer = setInterval(
         autoScanOnce,
         70000
     );
 
-    const status =
-        document.getElementById("opportunitiesStatus");
-
-    if (status) {
-        status.textContent =
-            "🟢 اسکن خودکار فعال است";
-    }
+    updateAutoScanButton();
 }
 
 function stopAutoScan() {
-    if (!autoScanTimer) {
-        return;
+    if (autoScanTimer) {
+        clearInterval(autoScanTimer);
+        autoScanTimer = null;
     }
-
-    clearInterval(autoScanTimer);
-    autoScanTimer = null;
 
     console.log("🦁 Lion Auto Scanner Stopped");
 
-    const status =
-        document.getElementById("opportunitiesStatus");
+    updateAutoScanButton();
+}
 
-    if (status) {
-        status.textContent =
-            "⏸ اسکن خودکار متوقف شد";
+function toggleAutoScan() {
+    if (autoScanTimer) {
+        stopAutoScan();
+    } else {
+        startAutoScan();
     }
 }
 
-// شروع خودکار بعد از آماده شدن صفحه
 document.addEventListener("DOMContentLoaded", () => {
     startAutoScan();
 });
 
-
-function toggleAutoScan() {
-    const button =
-        document.getElementById("autoScanButton");
-
-    if (autoScanTimer) {
-        stopAutoScan();
-
-        if (button) {
-            button.textContent =
-                "🔴 شروع اسکن خودکار";
-        }
-
-    } else {
-        startAutoScan();
-
-        if (button) {
-            button.textContent =
-                "🟢 توقف اسکن خودکار";
-        }
-    }
-}
