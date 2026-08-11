@@ -36,6 +36,69 @@ function showPage(id, button) {
     }
 }
 
+
+async function loadMarkets() {
+    const container = document.getElementById("marketsList");
+
+    if (!container) return;
+
+    container.innerHTML =
+        '<div class="market-loading">در حال دریافت  بازارهای Forex...</div>';
+
+    try {
+        const response = await fetch(`${API}/markets`, {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error("خطا در دریافت بازارها");
+        }
+
+        const data = await response.json();
+
+        if (
+            data.status !== "ok" ||
+            !Array.isArray(data.markets)
+        ) {
+            throw new Error("فرمت بازارها نامعتبر است");
+        }
+
+        container.innerHTML = "";
+
+        data.markets.forEach(function(symbol) {
+            const market = document.createElement("div");
+            market.className = "market";
+
+            const name = document.createElement("span");
+            name.textContent = symbol;
+
+            const button = document.createElement("button");
+            button.textContent = "انتخاب";
+            button.type = "button";
+
+            button.addEventListener("click", function() {
+                selectMarket(symbol);
+            });
+
+            market.appendChild(name);
+            market.appendChild(button);
+            container.appendChild(market);
+        });
+
+        console.log(
+            "🦁 Lion AI Markets:",
+            data.markets.length,
+            data.markets
+        );
+
+    } catch (error) {
+        console.error("🦁 Markets Error:", error);
+
+        container.innerHTML =
+            '<div class="market-loading">🔴 دریافت بازارها ناموفق بود</div>';
+    }
+}
+
 async function loadSignal() {
     const status = document.getElementById("globalStatus");
 
@@ -190,3 +253,9 @@ document.addEventListener("DOMContentLoaded", () => {
 window.selectMarket = selectMarket;
 window.refreshAll = refreshAll;
 window.loadSignal = loadSignal;
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadMarkets();
+    loadSignal();
+});
