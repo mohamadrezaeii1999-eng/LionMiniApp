@@ -218,6 +218,27 @@ def scan():
         "opportunities": opportunities[:10]
     })
 
+
+from paper_trading import get_wallet, open_trade, check_positions, reset_wallet
+
+@app.route("/paper/wallet")
+def paper_wallet():
+    return jsonify(get_wallet())
+
+@app.route("/paper/open", methods=["POST"])
+def paper_open():
+    d = request.get_json() or {}
+    return jsonify(open_trade(d["symbol"], d["signal"], d["entry"], d["stop_loss"], d["take_profit"]))
+
+@app.route("/paper/check", methods=["POST"])
+def paper_check():
+    d = request.get_json() or {}
+    return jsonify(check_positions(d.get("prices", {})))
+
+@app.route("/paper/reset", methods=["POST"])
+def paper_reset():
+    return jsonify(reset_wallet())
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
 
