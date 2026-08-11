@@ -367,14 +367,12 @@ async function scanMarkets() {
         try {
             data = JSON.parse(text);
         } catch (e) {
-            throw new Error(
-                "پاسخ API قابل خواندن نیست: " + text.slice(0, 150)
-            );
+            throw new Error("پاسخ API قابل خواندن نیست");
         }
 
         console.log("🦁 SCAN RESPONSE:", data);
 
-        if (data.status !== "ok") {
+        if (!response.ok || data.status !== "ok") {
             throw new Error(
                 data.message ||
                 data.error ||
@@ -395,93 +393,112 @@ async function scanMarkets() {
             return;
         }
 
-        const opportunities = Array.isArray(data.opportunities)
-            ? data.opportunities
+        /*
+         * اول نتایج واقعی results را می‌گیریم.
+         * اگر نبود، opportunities را استفاده می‌کنیم.
+         */
+        let results = Array.isArray(data.results)
+            ? data.results
             : [];
 
-        /*
-         * اگر BUY/SELL پیدا شد
-         */
-        if (opportunities.length > 0) {
-
-            list.innerHTML = opportunities.map(item => {
-
-                const signal = item.signal || "WAIT";
-
-                const signalText = {
-                    BUY: "خرید",
-                    SELL: "فروش",
-                    WAIT: "انتظار"
-                }[signal] || signal;
-
-                const signalClass = {
-                    BUY: "buy",
-                    SELL: "sell",
-                    WAIT: "wait"
-                }[signal] || "wait";
-
-                const confidence =
-                    item.confidence != null
-                        ? Number(item.confidence).toFixed(1)
-                        : "—";
-
-                const score =
-                    item.score != null
-                        ? Number(item.score).toFixed(1)
-                        : "—";
-
-                const price =
-                    item.price != null
-                        ? item.price
-                        : "—";
-
-                return `
-                    <div
-                        class="opportunity ${signalClass}"
-                        onclick="selectMarket('${item.symbol}')"
-                        style="cursor:pointer;"
-                    >
-                        <div>
-                            <strong>🦁 ${item.symbol}</strong>
-
-                            <div class="muted">
-                                ${signalText}
-                            </div>
-
-                            <div class="muted">
-                                قیمت: ${price}
-                            </div>
-                        </div>
-
-                        <div class="opportunity-data">
-                            <strong>${confidence}%</strong>
-                            <span>اطمینان</span>
-                        </div>
-
-                        <div class="opportunity-data">
-                            <strong>${score}</strong>
-                            <span>قدرت</span>
-                        </div>
-                    </div>
-                `;
-            }).join("");
-
-            return;
+        if (!results.length && Array.isArray(data.opportunities)) {
+            results = data.opportunities;
         }
 
         /*
-         * وقتی هنوز BUY/SELL قوی پیدا نشده
+         * مرتب‌سازی:
+         * قوی‌ترین امتیازها اول
          */
-        list.innerHTML = `
-            <div class="muted" style="padding:12px;">
-                ⏳ فعلاً فرصت BUY یا SELL قوی پیدا نشد.
-            </div>
+        results.sort((a, b) => {
+            const scoreA = Math.abs(Number(a.score || 0));
+            const scoreB = Math.abs(Number(b.score || 0));
 
-            <div class="muted" style="padding:8px 12px;font-size:12px;">
-                🦁 اسکن مرحله‌ای فعال است.
-                بازارهای بیشتری در اسکن‌های بعدی بررسی می‌شوند.
-            </div>
-        `;
+            if (scoreB !== scoreA) {
+                return scoreB - scoreA;
+            }
+
+            return Number(b.confidence || 0) -
+                   Number(a.confidence || 0);
+        });
+
+        /*
+         * فقط 10 نتیجه برتر نمایش داده شود
+         */
+        results = results.slice(0, 10);
+
+        if (!results.length) {
+            list.innerHTML = `
+                <div class="muted" style="padding:12px;">
+                    ⏳ هنوز نتیجه‌ای برای نمایش وجود ندارد.
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = results.map(item => {
+
+            const signal = item.signal || "WAIT";
+
+            const signalText = {
+                BUY: "خرید 🟢",
+                SELL: "فروش 🔴",
+                WAIT: "انتظار 🟡"
+            }[signal] || signal;
+
+            const signalClass = {
+                BUY: "buy",
+                SELL: "sell",
+                WAIT: "wait"
+            }[signal] || "wait";
+
+            const confidence =
+                item.confidence != null
+                    ? Number(item.confidence).toFixed(1)
+                    : "—";
+
+            const score =
+                item.score != null
+                    ? Number(item.score).toFixed(1)
+                    : "—";
+
+            const price =
+                item.price != null
+                    ? item.price
+                    : "—";
+
+            return `
+                <div
+                    class="opportunity ${signalClass}"
+                    onclick="selectMarket('${item.symbol}')"
+                    style="cursor:pointer;"
+                >
+
+                    <div>
+                        <strong>🦁 ${item.symbol}</strong>
+
+                        <div class="muted">
+                            ${signalText}
+                        </div>
+
+                        <div class="muted">
+                            قیمت: ${price}
+                        </div>
+                    </div>
+
+                    <div class="opportunity-data">
+                        <strong>${confidence}%</strong>
+                        <span>اطمینان</span>
+                    </div>
+
+                    <div class="opportunity-data">
+                        <strong>${score}</strong>
+                        <span>قدرت</span>
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
 
     } catch (error) {
 
