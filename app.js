@@ -458,3 +458,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateAutoScanButton();
 });
 
+
+window.scanMarkets = scanMarkets;
+window.startAutoScan = startAutoScan;
+window.stopAutoScan = stopAutoScan;
+window.toggleAutoScan = toggleAutoScan;
+
+console.log("🦁 Auto Scanner controls connected");
