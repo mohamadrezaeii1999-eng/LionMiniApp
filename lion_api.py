@@ -105,7 +105,7 @@ def signal():
 # هر بار فقط 2 بازار تحلیل می‌شود تا API محدود نشود.
 # ------------------------------------------------------------
 
-SCAN_BATCH_SIZE = 28
+SCAN_BATCH_SIZE = 1
 SCAN_INDEX = 0
 SCAN_RESULTS = {}
 SCAN_ERRORS = {}
