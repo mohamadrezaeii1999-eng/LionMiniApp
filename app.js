@@ -15,6 +15,27 @@ const SIGNAL_CLASS = {
     WAIT: "wait"
 };
 
+
+function showPage(id, button) {
+    document.querySelectorAll(".page").forEach(function(page) {
+        page.classList.remove("active");
+    });
+
+    const target = document.getElementById(id);
+
+    if (target) {
+        target.classList.add("active");
+    }
+
+    document.querySelectorAll(".nav button").forEach(function(btn) {
+        btn.classList.remove("active");
+    });
+
+    if (button) {
+        button.classList.add("active");
+    }
+}
+
 async function loadSignal() {
     const status = document.getElementById("globalStatus");
 
