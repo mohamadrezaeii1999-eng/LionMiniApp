@@ -405,6 +405,9 @@ async function scanMarkets() {
             results = data.opportunities;
         }
 
+        // نمایش بهترین نتیجه در کارت مخصوص
+        renderBestOpportunity(results);
+
         /*
          * مرتب‌سازی:
          * قوی‌ترین امتیازها اول
@@ -540,6 +543,179 @@ async function scanMarkets() {
         }
     }
 }
+
+// ------------------------------------------------------------
+// Lion AI PRO - Best Current Opportunity
+// ------------------------------------------------------------
+
+function renderBestOpportunity(results) {
+
+    const box = document.getElementById("bestOpportunity");
+
+    if (!box) {
+        return;
+    }
+
+    if (!Array.isArray(results) || !results.length) {
+
+        box.innerHTML = `
+            <div class="muted" style="padding:12px;">
+                ⏳ هنوز نتیجه‌ای برای نمایش وجود ندارد.
+            </div>
+        `;
+
+        return;
+    }
+
+    const sorted = [...results].sort((a, b) => {
+
+        const scoreA = Math.abs(Number(a.score || 0));
+        const scoreB = Math.abs(Number(b.score || 0));
+
+        if (scoreB !== scoreA) {
+            return scoreB - scoreA;
+        }
+
+        return Number(b.confidence || 0) -
+               Number(a.confidence || 0);
+    });
+
+    const best = sorted[0];
+
+    const signal = best.signal || "WAIT";
+
+    const signalText = {
+        BUY: "خرید 🟢",
+        SELL: "فروش 🔴",
+        WAIT: "انتظار 🟡"
+    }[signal] || signal;
+
+    const confidence =
+        best.confidence != null
+            ? Number(best.confidence).toFixed(1)
+            : "—";
+
+    const score =
+        best.score != null
+            ? Number(best.score).toFixed(1)
+            : "—";
+
+    const price =
+        best.price != null
+            ? best.price
+            : "—";
+
+    const reasons = Array.isArray(best.reasons)
+        ? best.reasons.slice(0, 4)
+        : [];
+
+    const reasonsHtml = reasons.length
+        ? reasons.map(reason => `
+            <div class="muted" style="margin-top:4px;">
+                • ${reason}
+            </div>
+        `).join("")
+        : "";
+
+    let tradeInfo = "";
+
+    if (signal === "BUY" || signal === "SELL") {
+
+        tradeInfo = `
+            <div style="
+                margin-top:12px;
+                padding:10px;
+                border-radius:10px;
+                background:rgba(255,255,255,0.05);
+            ">
+                <strong>
+                    🟢 سیگنال معاملاتی فعال است
+                </strong>
+
+                <div class="muted" style="margin-top:5px;">
+                    جزئیات ورود، حد ضرر و حد سود از موتور معاملاتی نمایش داده می‌شود.
+                </div>
+            </div>
+        `;
+
+    } else {
+
+        tradeInfo = `
+            <div style="
+                margin-top:12px;
+                padding:10px;
+                border-radius:10px;
+                background:rgba(255,255,255,0.05);
+            ">
+                <strong>⏳ فعلاً ورود مناسب نیست</strong>
+
+                <div class="muted" style="margin-top:5px;">
+                    قدرت تحلیل بالاست، اما موتور هنوز BUY/SELL تأییدشده نداده است.
+                </div>
+            </div>
+        `;
+    }
+
+    box.innerHTML = `
+
+        <div
+            class="opportunity ${signal === "BUY" ? "buy" : signal === "SELL" ? "sell" : "wait"}"
+            onclick="selectMarket('${best.symbol}')"
+            style="
+                cursor:pointer;
+                display:flex;
+                flex-direction:column;
+                gap:10px;
+            "
+        >
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+            ">
+
+                <strong style="font-size:18px;">
+                    🦁 ${best.symbol}
+                </strong>
+
+                <strong>
+                    ${signalText}
+                </strong>
+
+            </div>
+
+            <div style="
+                display:flex;
+                gap:18px;
+                flex-wrap:wrap;
+            ">
+
+                <div class="opportunity-data">
+                    <strong>${confidence}%</strong>
+                    <span>اطمینان</span>
+                </div>
+
+                <div class="opportunity-data">
+                    <strong>${score}</strong>
+                    <span>قدرت</span>
+                </div>
+
+                <div class="opportunity-data">
+                    <strong>${price}</strong>
+                    <span>قیمت</span>
+                </div>
+
+            </div>
+
+            ${reasonsHtml}
+
+            ${tradeInfo}
+
+        </div>
+    `;
+}
+
 
 // ------------------------------------------------------------
 // Lion AI PRO - Auto Forex Scanner
