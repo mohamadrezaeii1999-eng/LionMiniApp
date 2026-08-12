@@ -106,6 +106,10 @@ def signal():
 # ------------------------------------------------------------
 
 SCAN_BATCH_SIZE = 4
+
+# حداکثر عمر نتیجه اسکن برای Auto Paper Trading
+SCAN_RESULT_MAX_AGE = 900
+
 SCAN_INDEX = 0
 SCAN_RESULTS = {}
 SCAN_ERRORS = {}
@@ -174,6 +178,10 @@ def scan():
                     "message",
                     result.get("error", "Analysis error")
                 )
+
+                # نتیجه قبلی این نماد دیگر معتبر نیست
+                SCAN_RESULTS.pop(symbol, None)
+
                 continue
 
             try:
@@ -195,7 +203,8 @@ def scan():
                 "confidence": confidence,
                 "price": result.get("price"),
                 "analysis": result.get("analysis", ""),
-                "reasons": result.get("reasons", [])
+                "reasons": result.get("reasons", []),
+                "scanned_at": time.time()
             }
 
             SCAN_ERRORS.pop(symbol, None)
@@ -203,6 +212,9 @@ def scan():
         except Exception as exc:
             print(f"SCAN ERROR {symbol}: {exc}")
             SCAN_ERRORS[symbol] = str(exc)
+
+            # جلوگیری از استفاده از سیگنال قدیمی
+            SCAN_RESULTS.pop(symbol, None)
 
     opportunities = [
         item for item in SCAN_RESULTS.values()
@@ -297,10 +309,14 @@ def paper_auto():
         })
 
     # فقط سیگنال‌های واقعی BUY/SELL
+    now = time.time()
+
     opportunities = [
         x for x in SCAN_RESULTS.values()
         if x.get("signal") in ("BUY", "SELL")
         and x.get("price") is not None
+        and x.get("scanned_at") is not None
+        and now - float(x.get("scanned_at", 0)) <= SCAN_RESULT_MAX_AGE
     ]
 
     opportunities.sort(
