@@ -587,7 +587,7 @@ def analyze(symbol=DEFAULT_SYMBOL):
         if error:
             return {
                 "status": "error",
-                "engine": "Lion AI PRO V3.4",
+                "engine": "Lion AI PRO V3.7",
                 "symbol": symbol,
                 "timeframe": name,
                 "message": error
@@ -811,7 +811,7 @@ def analyze(symbol=DEFAULT_SYMBOL):
 
     return {
         "status": "ok",
-        "engine": "Lion AI PRO V3.4",
+        "engine": "Lion AI PRO V3.7",
         "symbol": symbol,
         "signal": signal,
         "score": final_score,
