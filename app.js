@@ -810,3 +810,130 @@ window.stopAutoScan = stopAutoScan;
 window.toggleAutoScan = toggleAutoScan;
 
 console.log("🦁 Auto Scanner controls connected");
+
+/* ============================================================
+   REAL MARKET CANDLE CHART
+   ============================================================ */
+
+async function loadRealChart() {
+    const canvas = document.getElementById("realChart");
+    const status = document.getElementById("chartStatus");
+
+    if (!canvas) return;
+
+    try {
+        const response = await fetch(
+            `${API}/candles?symbol=${encodeURIComponent(selectedSymbol)}&interval=5min&t=${Date.now()}`,
+            { cache: "no-store" }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "ok" || !Array.isArray(data.candles) || !data.candles.length) {
+            if (status) {
+                status.textContent =
+                    data.message || "فعلاً داده واقعی نمودار در دسترس نیست";
+            }
+            return;
+        }
+
+        const candles = data.candles.slice(-60);
+
+        const ctx = canvas.getContext("2d");
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const width = rect.width;
+        const height = rect.height;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const highs = candles.map(c => Number(c.high));
+        const lows = candles.map(c => Number(c.low));
+
+        const max = Math.max(...highs);
+        const min = Math.min(...lows);
+        const range = max - min || 0.0001;
+
+        const pad = 20;
+        const chartHeight = height - pad * 2;
+        const candleWidth = Math.max(4, (width - 20) / candles.length * 0.65);
+
+        function y(price) {
+            return pad + ((max - price) / range) * chartHeight;
+        }
+
+        candles.forEach((candle, i) => {
+            const open = Number(candle.open);
+            const close = Number(candle.close);
+            const high = Number(candle.high);
+            const low = Number(candle.low);
+
+            const x = 10 + (i + 0.5) * ((width - 20) / candles.length);
+
+            const bullish = close >= open;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y(high));
+            ctx.lineTo(x, y(low));
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = bullish ? "#31e69c" : "#ff5b69";
+            ctx.stroke();
+
+            const bodyTop = y(Math.max(open, close));
+            const bodyBottom = y(Math.min(open, close));
+            const bodyHeight = Math.max(2, bodyBottom - bodyTop);
+
+            ctx.fillStyle = bullish ? "#31e69c" : "#ff5b69";
+            ctx.fillRect(
+                x - candleWidth / 2,
+                bodyTop,
+                candleWidth,
+                bodyHeight
+            );
+        });
+
+        const last = candles[candles.length - 1];
+
+        const lowEl = document.getElementById("chartLow");
+        const highEl = document.getElementById("chartHigh");
+        const timeEl = document.getElementById("chartTime");
+
+        if (lowEl) lowEl.textContent = `کف: ${min.toFixed(5)}`;
+        if (highEl) highEl.textContent = `سقف: ${max.toFixed(5)}`;
+        if (timeEl) timeEl.textContent = last.datetime || "--";
+
+        if (status) status.style.display = "none";
+
+    } catch (error) {
+        console.error("REAL CHART ERROR:", error);
+
+        if (status) {
+            status.style.display = "flex";
+            status.textContent = "خطا در دریافت داده نمودار";
+        }
+    }
+}
+
+window.loadRealChart = loadRealChart;
+
+// اجرای نمودار هنگام ورود و بعد از تغییر جفت‌ارز
+document.addEventListener("DOMContentLoaded", () => {
+    loadRealChart();
+    setInterval(loadRealChart, 30000);
+});
+
+// وقتی بازار عوض شد، نمودار همان بازار را بگیر
+const _oldSelectMarket = window.selectMarket;
+
+if (typeof _oldSelectMarket === "function") {
+    window.selectMarket = function(symbol) {
+        const result = _oldSelectMarket.apply(this, arguments);
+        setTimeout(loadRealChart, 300);
+        return result;
+    };
+}
