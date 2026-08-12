@@ -17,25 +17,47 @@ const SIGNAL_CLASS = {
 
 
 function showPage(id, button) {
-    document.querySelectorAll(".page").forEach(function(page) {
-        page.classList.remove("active");
-    });
+    try {
+        const pages = document.querySelectorAll(".page");
 
-    const target = document.getElementById(id);
+        pages.forEach(function(page) {
+            page.classList.remove("active");
+        });
 
-    if (target) {
+        const target = document.getElementById(id);
+
+        if (!target) {
+            console.error("Lion AI page not found:", id);
+            return false;
+        }
+
         target.classList.add("active");
-    }
 
-    document.querySelectorAll(".nav button").forEach(function(btn) {
-        btn.classList.remove("active");
-    });
+        /* منوی واقعی پایین صفحه */
+        document.querySelectorAll(".nav-inner button").forEach(function(btn) {
+            btn.classList.remove("active");
+        });
 
-    if (button) {
-        button.classList.add("active");
+        if (button) {
+            button.classList.add("active");
+        }
+
+        /* تحلیل */
+        if (id === "analysisPage" && typeof loadRealChart === "function") {
+            setTimeout(loadRealChart, 100);
+        }
+
+        /* بازارها */
+        if (id === "markets" && typeof loadMarkets === "function") {
+            setTimeout(loadMarkets, 100);
+        }
+
+        return false;
+    } catch (error) {
+        console.error("SHOW PAGE ERROR:", error);
+        return false;
     }
 }
-
 
 async function loadMarkets() {
     const container = document.getElementById("marketsList");
@@ -1149,3 +1171,215 @@ if (typeof _oldSelectMarket === "function") {
         return result;
     };
 }
+
+
+/* ===== LION BUTTONS SAFE FIX ===== */
+
+function clearHistory() {
+    try {
+        localStorage.removeItem("lionTradeHistory");
+        localStorage.removeItem("tradeHistory");
+
+        const history = document.getElementById("history");
+        if (history) {
+            history.innerHTML =
+                '<div class="muted">تاریخچه پاک شد</div>';
+        }
+    } catch (error) {
+        console.error("CLEAR HISTORY ERROR:", error);
+    }
+}
+
+function showInfo() {
+    alert(
+        "🦁 LION AI PRO\n\n" +
+        "هوش مصنوعی معامله‌گر\n" +
+        "تحلیل بازار با داده واقعی\n" +
+        "نسخه Engine V3.7"
+    );
+}
+
+/* اتصال توابع به دکمه‌های HTML */
+
+window.showPage = showPage;
+window.clearHistory = clearHistory;
+window.showInfo = showInfo;
+window.scanMarkets = scanMarkets;
+window.startAutoScan = startAutoScan;
+window.stopAutoScan = stopAutoScan;
+window.toggleAutoScan = toggleAutoScan;
+
+
+
+/* ===== LION AI PRO — DIRECT NAV EVENTS ===== */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    document.querySelectorAll(".nav-inner button").forEach(function(button){
+
+        button.addEventListener("click", function(event){
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            switch(button.id){
+
+                case "nav-dashboard":
+                    showPage("dashboard", button);
+                    break;
+
+                case "nav-analysis":
+                    showPage("analysisPage", button);
+                    break;
+
+                case "nav-markets":
+                    showPage("markets", button);
+                    break;
+
+                case "nav-history":
+                    showPage("history", button);
+                    break;
+
+                case "nav-settings":
+                    showPage("settings", button);
+                    break;
+            }
+
+        }, true);
+
+    });
+
+});
+
+
+/* ===== LION AI PRO — PAPER BUTTON API ===== */
+
+async function startAutoTrading(){
+
+    const status = document.getElementById("autoStatus");
+    const mode = document.getElementById("autoMode");
+
+    if(status) status.textContent = "● در حال اتصال...";
+
+    try{
+
+        const response = await fetch(
+            API + "/paper/start",
+            {
+                method: "POST"
+            }
+        );
+
+        const data = await response.json();
+
+        if(!data.ok){
+            throw new Error(data.error || "Paper Trading error");
+        }
+
+        if(status)
+            status.textContent = "● در حال اجرا";
+
+        if(mode)
+            mode.textContent = "PAPER • ON";
+
+        console.log("LION PAPER STARTED", data);
+
+    }catch(error){
+
+        console.error("PAPER START ERROR:", error);
+
+        if(status)
+            status.textContent = "● خطا در اتصال";
+    }
+}
+
+
+async function stopAutoTrading(){
+
+    const status = document.getElementById("autoStatus");
+    const mode = document.getElementById("autoMode");
+
+    try{
+
+        const response = await fetch(
+            API + "/paper/stop",
+            {
+                method: "POST"
+            }
+        );
+
+        const data = await response.json();
+
+        if(!data.ok){
+            throw new Error(data.error || "Paper Trading error");
+        }
+
+        if(status)
+            status.textContent = "● متوقف";
+
+        if(mode)
+            mode.textContent = "PAPER • OFF";
+
+        console.log("LION PAPER STOPPED", data);
+
+    }catch(error){
+
+        console.error("PAPER STOP ERROR:", error);
+
+        if(status)
+            status.textContent = "● خطا در اتصال";
+    }
+}
+
+
+async function loadPaperStatus(){
+
+    try{
+
+        const response = await fetch(
+            API + "/paper/status"
+        );
+
+        const data = await response.json();
+
+        const status = document.getElementById("autoStatus");
+        const mode = document.getElementById("autoMode");
+        const market = document.getElementById("autoMarket");
+
+        if(market)
+            market.textContent = selectedSymbol;
+
+        if(data.enabled){
+
+            if(status)
+                status.textContent = "● در حال اجرا";
+
+            if(mode)
+                mode.textContent = "PAPER • ON";
+
+        }else{
+
+            if(status)
+                status.textContent = "● آماده";
+
+            if(mode)
+                mode.textContent = "PAPER • OFF";
+        }
+
+    }catch(error){
+
+        console.error("PAPER STATUS ERROR:", error);
+    }
+}
+
+
+window.startAutoTrading = startAutoTrading;
+window.stopAutoTrading = stopAutoTrading;
+window.loadPaperStatus = loadPaperStatus;
+
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    setTimeout(loadPaperStatus, 500);
+
+});
