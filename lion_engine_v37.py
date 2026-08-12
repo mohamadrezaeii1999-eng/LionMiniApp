@@ -84,37 +84,64 @@ def _make_timeframe(candles, interval):
         return candles
 
 
-def get_data(symbol, interval, outputsize=200):
+QUOTA_COOLDOWN_FILE = "twelve_quota_cooldown.json"
+QUOTA_COOLDOWN = 3600
 
+
+def _quota_blocked():
+    try:
+        import json
+        if not os.path.exists(QUOTA_COOLDOWN_FILE):
+            return False
+        with open(QUOTA_COOLDOWN_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return time.time() - float(data.get("blocked_at", 0)) < QUOTA_COOLDOWN
+    except Exception:
+        return False
+
+
+def _set_quota_block():
+    try:
+        import json
+        with open(QUOTA_COOLDOWN_FILE, "w", encoding="utf-8") as f:
+            json.dump({"blocked_at": time.time()}, f)
+    except Exception:
+        pass
+
+
+def get_data(symbol, interval, outputsize=200):
     key = os.getenv("TWELVE_DATA_API_KEY")
 
     if not key:
         return None, "API key missing"
 
     symbol = symbol.upper().strip()
-
     cache = _load_cache()
     now = time.time()
-
     cached = cache.get(symbol)
 
+    # اول Cache معتبر را استفاده کن
     if cached:
-
         updated_at = float(cached.get("updated_at", 0))
         candles = cached.get("candles", [])
 
         if candles and now - updated_at < CACHE_TTL:
-
-            result = _make_timeframe(
-                candles,
-                interval
-            )
+            result = _make_timeframe(candles, interval)
 
             if len(result) >= 60:
                 return result[-outputsize:], None
 
-    try:
+    # اگر Twelve Data قبلاً سهمیه را تمام کرده، درخواست جدید نفرست
+    if _quota_blocked():
+        if cached and cached.get("candles"):
+            result = _make_timeframe(cached["candles"], interval)
 
+            if len(result) >= 60:
+                return result[-outputsize:], None
+
+        return None, "Twelve Data quota cooldown active"
+
+    try:
         response = requests.get(
             API_URL,
             params={
@@ -128,10 +155,18 @@ def get_data(symbol, interval, outputsize=200):
 
         data = response.json()
 
-        if "values" not in data:
+        message = str(data.get("message", ""))
+
+        # تشخیص تمام شدن سهمیه
+        if (
+            "quota" in message.lower()
+            or "credits" in message.lower()
+            or "limit" in message.lower()
+            or "run out" in message.lower()
+        ):
+            _set_quota_block()
 
             if cached and cached.get("candles"):
-
                 result = _make_timeframe(
                     cached["candles"],
                     interval
@@ -140,17 +175,24 @@ def get_data(symbol, interval, outputsize=200):
                 if len(result) >= 60:
                     return result[-outputsize:], None
 
-            return None, data.get(
-                "message",
-                "Market data error"
-            )
+            return None, message or "Twelve Data quota exceeded"
+
+        if "values" not in data:
+            if cached and cached.get("candles"):
+                result = _make_timeframe(
+                    cached["candles"],
+                    interval
+                )
+
+                if len(result) >= 60:
+                    return result[-outputsize:], None
+
+            return None, message or "Market data error"
 
         candles = []
 
         for item in reversed(data["values"]):
-
             try:
-
                 candles.append({
                     "datetime": item["datetime"],
                     "open": float(item["open"]),
@@ -158,7 +200,6 @@ def get_data(symbol, interval, outputsize=200):
                     "low": float(item["low"]),
                     "close": float(item["close"])
                 })
-
             except (KeyError, ValueError, TypeError):
                 continue
 
@@ -172,17 +213,13 @@ def get_data(symbol, interval, outputsize=200):
 
         _save_cache()
 
-        result = _make_timeframe(
-            candles,
-            interval
-        )
+        result = _make_timeframe(candles, interval)
 
         return result[-outputsize:], None
 
     except Exception as exc:
-
+        # در صورت خطای شبکه، از آخرین Cache استفاده کن
         if cached and cached.get("candles"):
-
             result = _make_timeframe(
                 cached["candles"],
                 interval
