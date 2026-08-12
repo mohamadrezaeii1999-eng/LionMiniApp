@@ -159,6 +159,7 @@ def scan():
         })
 
     batch = []
+    batch_successful = 0
 
     for _ in range(min(SCAN_BATCH_SIZE, total_markets)):
         symbol = FOREX_PAIRS[SCAN_INDEX]
@@ -208,6 +209,7 @@ def scan():
             }
 
             SCAN_ERRORS.pop(symbol, None)
+            batch_successful += 1
 
         except Exception as exc:
             print(f"SCAN ERROR {symbol}: {exc}")
@@ -245,8 +247,8 @@ def scan():
         "scanned": total_markets,
         "batch_size": len(batch),
         "batch": batch,
-        "successful": len(SCAN_RESULTS),
-        "failed": len(SCAN_ERRORS),
+        "successful": batch_successful,
+        "failed": sum(1 for symbol in batch if symbol in SCAN_ERRORS),
         "cached_results": len(SCAN_RESULTS),
         "errors": SCAN_ERRORS,
         "results": all_results,
