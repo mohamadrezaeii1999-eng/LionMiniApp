@@ -381,7 +381,7 @@ def paper_auto():
 import threading
 import time
 
-AUTO_SCAN_INTERVAL = 60000
+AUTO_SCAN_INTERVAL = 600
 AUTO_SCAN_ENABLED = True
 
 
