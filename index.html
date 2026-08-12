@@ -986,7 +986,277 @@ border-radius:0;margin:0;padding:10px 3px;font-size:11px
         font-size:5px;
     }
 }
-\n</style>
+\n
+/* ============================================================
+   LION AI PRO — DASHBOARD LUXURY CARDS
+   ============================================================ */
+
+.system-status{
+    position:relative !important;
+    overflow:hidden !important;
+    min-height:64px !important;
+    padding:13px 14px !important;
+    margin-top:12px !important;
+
+    background:
+        radial-gradient(circle at 100% 0%,rgba(54,227,157,.08),transparent 38%),
+        linear-gradient(145deg,#0d171f,#080e15) !important;
+
+    border:1px solid rgba(54,227,157,.22) !important;
+    border-radius:17px !important;
+
+    box-shadow:
+        0 8px 28px rgba(0,0,0,.22),
+        inset 0 1px 0 rgba(255,255,255,.025) !important;
+}
+
+.system-status::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:3px;
+    background:#36e39d;
+    box-shadow:0 0 14px rgba(54,227,157,.65);
+}
+
+.system-status-left{
+    gap:11px !important;
+}
+
+.system-dot{
+    width:11px !important;
+    height:11px !important;
+    flex:none !important;
+    box-shadow:
+        0 0 7px currentColor,
+        0 0 15px currentColor !important;
+}
+
+.system-dot.online{
+    color:#36e39d !important;
+    background:#36e39d !important;
+}
+
+.system-dot.warning{
+    color:#ffd85a !important;
+    background:#ffd85a !important;
+}
+
+.system-dot.offline{
+    color:#ff6875 !important;
+    background:#ff6875 !important;
+}
+
+.system-title{
+    font-size:11px !important;
+    color:#eef2f6 !important;
+    letter-spacing:.2px;
+}
+
+.system-subtitle{
+    margin-top:4px !important;
+    font-size:9px !important;
+    color:#7f8c9b !important;
+}
+
+.system-latency{
+    min-width:55px;
+    padding:6px 8px;
+
+    text-align:center;
+    direction:ltr;
+
+    border-radius:9px;
+    background:#07130f;
+    border:1px solid rgba(54,227,157,.18);
+
+    color:#36e39d;
+    font-size:9px;
+    font-weight:800;
+}
+
+/* ============================================================
+   BEST OPPORTUNITY
+   ============================================================ */
+
+#bestOpportunitySection{
+    position:relative;
+    overflow:hidden;
+
+    padding:16px !important;
+
+    background:
+        radial-gradient(circle at 0% 0%,rgba(229,181,45,.13),transparent 42%),
+        radial-gradient(circle at 100% 100%,rgba(229,181,45,.06),transparent 45%),
+        linear-gradient(145deg,#111820,#090f16) !important;
+
+    border:1px solid rgba(229,181,45,.30) !important;
+    border-radius:19px !important;
+
+    box-shadow:
+        0 10px 32px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.025) !important;
+}
+
+#bestOpportunitySection::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:14%;
+    right:14%;
+    height:1px;
+
+    background:linear-gradient(
+        90deg,
+        transparent,
+        #e5b52d,
+        transparent
+    );
+
+    box-shadow:0 0 12px rgba(229,181,45,.45);
+}
+
+#bestOpportunitySection .section-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    color:#f3c84b !important;
+    font-size:14px !important;
+    font-weight:900 !important;
+}
+
+#bestOpportunitySection .section-title::after{
+    content:"AI PICK";
+    margin-right:auto;
+
+    padding:4px 7px;
+    border-radius:7px;
+
+    background:rgba(229,181,45,.08);
+    border:1px solid rgba(229,181,45,.22);
+
+    color:#b99024;
+    font-size:7px;
+    letter-spacing:1px;
+}
+
+/* ============================================================
+   LOWER NAV / BUTTONS
+   ============================================================ */
+
+button{
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        border-color .18s ease !important;
+}
+
+button:active{
+    transform:scale(.97) !important;
+}
+
+.page-nav,
+.bottom-nav,
+.nav-bar,
+.footer-nav{
+    background:transparent !important;
+}
+
+.page-nav button,
+.bottom-nav button,
+.nav-bar button,
+.footer-nav button{
+    position:relative;
+
+    min-height:54px;
+
+    border-radius:15px !important;
+
+    background:
+        linear-gradient(145deg,#111a24,#091018) !important;
+
+    border:1px solid #202e3d !important;
+
+    color:#8d9aaa !important;
+
+    box-shadow:
+        0 6px 18px rgba(0,0,0,.20),
+        inset 0 1px 0 rgba(255,255,255,.025) !important;
+}
+
+.page-nav button:hover,
+.bottom-nav button:hover,
+.nav-bar button:hover,
+.footer-nav button:hover{
+    border-color:rgba(229,181,45,.38) !important;
+    color:#e5b52d !important;
+
+    box-shadow:
+        0 8px 22px rgba(0,0,0,.28),
+        0 0 18px rgba(229,181,45,.08) !important;
+}
+
+/* active button */
+
+.page-nav button.active,
+.bottom-nav button.active,
+.nav-bar button.active,
+.footer-nav button.active{
+    color:#f0c84b !important;
+
+    background:
+        radial-gradient(circle at 50% 0%,rgba(229,181,45,.13),transparent 60%),
+        linear-gradient(145deg,#151c25,#0b1118) !important;
+
+    border-color:rgba(229,181,45,.42) !important;
+
+    box-shadow:
+        0 0 20px rgba(229,181,45,.09),
+        inset 0 0 18px rgba(229,181,45,.035) !important;
+}
+
+.page-nav button.active::after,
+.bottom-nav button.active::after,
+.nav-bar button.active::after,
+.footer-nav button.active::after{
+    content:"";
+    position:absolute;
+
+    bottom:4px;
+    left:30%;
+    right:30%;
+
+    height:2px;
+    border-radius:10px;
+
+    background:#e5b52d;
+    box-shadow:0 0 8px rgba(229,181,45,.7);
+}
+
+/* ============================================================
+   MOBILE POLISH
+   ============================================================ */
+
+@media(max-width:600px){
+
+    #bestOpportunitySection{
+        margin-bottom:13px !important;
+    }
+
+    .system-status{
+        border-radius:16px !important;
+    }
+
+    .system-latency{
+        font-size:8px;
+        min-width:50px;
+    }
+}
+
+</style>
 </head>
 
 <body>
