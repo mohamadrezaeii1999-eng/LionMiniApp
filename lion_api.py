@@ -68,6 +68,54 @@ def markets():
     })
 
 
+@app.get("/candles")
+def candles():
+    symbol = request.args.get("symbol", "EUR/USD").upper().strip()
+    interval = request.args.get("interval", "5min")
+
+    if interval not in ("5min", "15min", "1h"):
+        return jsonify({
+            "status": "error",
+            "message": "تایم‌فریم نامعتبر است"
+        }), 400
+
+    try:
+        from lion_engine_v37 import get_data
+
+        data, error = get_data(
+            symbol,
+            interval,
+            outputsize=120
+        )
+
+        if error or not data:
+            return jsonify({
+                "status": "error",
+                "symbol": symbol,
+                "interval": interval,
+                "message": error or "داده کندل در دسترس نیست",
+                "candles": []
+            })
+
+        return jsonify({
+            "status": "ok",
+            "engine": "Lion AI PRO V3.7",
+            "symbol": symbol,
+            "interval": interval,
+            "count": len(data),
+            "candles": data
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "symbol": symbol,
+            "interval": interval,
+            "message": str(exc),
+            "candles": []
+        })
+
+
 @app.get("/signal")
 def signal():
     symbol = request.args.get(
