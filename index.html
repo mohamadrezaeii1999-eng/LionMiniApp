@@ -62,27 +62,1010 @@ border-radius:0;margin:0;padding:10px 3px;font-size:11px
 .nav button.active{color:#f0b72a}
 .error{color:#ff6875;text-align:center}
 .success{color:#36e39d;text-align:center}
-</style>
+
+/* ===== UI 10.4 PRICE CARD ===== */
+.market-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:4px;
+}
+
+.market-top .title{
+    margin-bottom:4px;
+    font-size:19px;
+}
+
+.market-live{
+    padding:6px 9px;
+    border-radius:10px;
+    background:#09251d;
+    color:#36e39d;
+    border:1px solid #15543f;
+    font-size:10px;
+    font-weight:900;
+}
+
+.price{
+    font-size:38px;
+    letter-spacing:.5px;
+    margin:12px 0 2px;
+    line-height:1.1;
+}
+
+.price-change{
+    color:#8996a6;
+    font-size:12px;
+    margin-bottom:10px;
+}
+
+/* ===== UI 10.5 SIGNAL CARD ===== */
+
+.signal{
+    position:relative;
+    min-height:82px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    border-radius:16px;
+    margin:14px 0;
+    font-size:27px;
+    font-weight:950;
+    letter-spacing:.5px;
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.signal::before{
+    content:"AI SIGNAL";
+    font-size:9px;
+    letter-spacing:1.5px;
+    opacity:.55;
+    font-weight:700;
+}
+
+.signal.buy{
+    background:linear-gradient(145deg,#063b2a,#08251d);
+    color:#31e69c;
+    border-color:#15543f;
+    box-shadow:0 0 25px rgba(49,230,156,.08);
+}
+
+.signal.sell{
+    background:linear-gradient(145deg,#45151b,#281015);
+    color:#ff5b69;
+    border-color:#68303a;
+    box-shadow:0 0 25px rgba(255,91,105,.08);
+}
+
+.signal.wait{
+    background:linear-gradient(145deg,#413710,#28230d);
+    color:#ffd85a;
+    border-color:#625522;
+    box-shadow:0 0 25px rgba(255,216,90,.06);
+}
+
+
+/* ===== UI 10.6 TRADE LEVELS ===== */
+
+.trade-levels{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin:10px 0;
+}
+
+.trade-box{
+    background:#0a111a;
+    border-radius:12px;
+    padding:11px 7px;
+    text-align:center;
+    border:1px solid #1d2a39;
+}
+
+.trade-label{
+    font-size:9px;
+    color:#788697;
+    line-height:1.4;
+}
+
+.trade-value{
+    margin-top:6px;
+    font-size:13px;
+    font-weight:900;
+    direction:ltr;
+}
+
+.entry-box{
+    border-color:#304052;
+}
+
+.sl-box{
+    border-color:#572b34;
+}
+
+.sl-box .trade-value{
+    color:#ff6875;
+}
+
+.tp-box{
+    border-color:#17543f;
+}
+
+.tp-box .trade-value{
+    color:#36e39d;
+}
+
+@media(max-width:380px){
+    .trade-label{
+        font-size:8px;
+    }
+
+    .trade-value{
+        font-size:11px;
+    }
+}
+
+
+/* ===== UI 10.7 AI METRICS ===== */
+
+.ai-metrics{
+    display:grid;
+    gap:10px;
+    margin-top:10px;
+}
+
+.ai-metric{
+    background:#0a111a;
+    border:1px solid #1d2a39;
+    border-radius:13px;
+    padding:11px;
+}
+
+.metric-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12px;
+    color:#8996a6;
+}
+
+.metric-head strong{
+    color:#fff;
+    font-size:14px;
+    direction:ltr;
+}
+
+.metric-bar{
+    height:7px;
+    margin-top:9px;
+    background:#18212d;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.metric-fill{
+    width:0%;
+    height:100%;
+    border-radius:10px;
+    transition:width .5s ease;
+}
+
+.score-fill{
+    background:linear-gradient(90deg,#dca51c,#ffd85a);
+}
+
+.confidence-fill{
+    background:linear-gradient(90deg,#168c68,#36e39d);
+}
+
+
+/* ===== UI 10.10 ANALYSIS SUMMARY ===== */
+
+.analysis-summary{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    background:linear-gradient(145deg,#0b141f,#091019);
+    border:1px solid #1d2a39;
+    border-radius:14px;
+    padding:13px;
+}
+
+.analysis-icon{
+    width:36px;
+    height:36px;
+    flex:0 0 36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:11px;
+    background:#171f2b;
+    border:1px solid #2b3949;
+    font-size:18px;
+}
+
+.analysis-text{
+    flex:1;
+    line-height:1.9;
+    color:#d5dce5;
+    font-size:13px;
+}
+
+
+/* ===== UI 10.11 SYSTEM STATUS ===== */
+
+.system-status{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:#0a111a;
+    border:1px solid #1d2a39;
+    border-radius:13px;
+    padding:11px 12px;
+    margin-top:10px;
+}
+
+.system-status-left{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.system-dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#ffd85a;
+    box-shadow:0 0 10px rgba(255,216,90,.5);
+}
+
+.system-dot.online{
+    background:#36e39d;
+    box-shadow:0 0 10px rgba(54,227,157,.55);
+}
+
+.system-dot.offline{
+    background:#ff6875;
+    box-shadow:0 0 10px rgba(255,104,117,.45);
+}
+
+.system-dot.warning{
+    background:#ffd85a;
+    box-shadow:0 0 10px rgba(255,216,90,.55);
+}
+
+/* UI 10.24 SYSTEM STATUS PRO */
+
+
+.system-status{
+    box-shadow:0 8px 24px rgba(0,0,0,.16);
+    backdrop-filter:blur(8px);
+}
+
+.system-status-left{
+    min-width:0;
+}
+
+.system-title{
+    color:#dce4ed;
+}
+
+.system-subtitle{
+    max-width:270px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.system-latency{
+    direction:ltr;
+    font-family:monospace;
+    font-size:11px;
+    color:#7f8b9a;
+    padding:5px 8px;
+    border-radius:8px;
+    background:#111a25;
+    border:1px solid #1d2a39;
+}
+
+
+.system-title{
+    font-size:12px;
+    font-weight:800;
+}
+
+.system-subtitle{
+    margin-top:3px;
+    color:#788697;
+    font-size:10px;
+}
+
+.system-latency{
+    color:#8996a6;
+    font-size:10px;
+    direction:ltr;
+}
+
+
+/* ===== UI 10.16 SIGNAL CARD ===== */
+
+.signal-card{
+    margin:12px 0;
+    padding:13px;
+    border-radius:16px;
+    background:linear-gradient(145deg,#0c141e,#091019);
+    border:1px solid #202d3c;
+}
+
+.signal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+}
+
+.signal-label{
+    color:#8d99a8;
+    font-size:11px;
+    font-weight:800;
+}
+
+.signal-time{
+    color:#687687;
+    font-size:10px;
+    direction:ltr;
+}
+
+.signal-card .signal{
+    margin:0;
+    padding:14px;
+    font-size:25px;
+    border-radius:13px;
+}
+
+.signal-hint{
+    margin-top:8px;
+    text-align:center;
+    color:#7f8b9a;
+    font-size:11px;
+}
+
+
+/* ===== LION AI PRO LOGO TEST ===== */
+
+.lion-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 2px 20px;
+    text-align:right;
+}
+
+.lion-brand{
+    display:flex;
+    align-items:center;
+    gap:11px;
+}
+
+.lion-logo{
+    width:52px;
+    height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:17px;
+
+    background:
+        radial-gradient(circle at 35% 25%,#2b3544 0%,#111a25 48%,#080e16 100%);
+
+    border:1px solid #4a5868;
+
+    box-shadow:
+        0 0 0 1px rgba(220,165,28,.08),
+        0 0 25px rgba(220,165,28,.15);
+
+    font-size:29px;
+}
+
+.lion-name{
+    font-size:21px;
+    font-weight:950;
+    letter-spacing:1.2px;
+    line-height:1.1;
+}
+
+.lion-name span{
+    color:#e3ad25;
+}
+
+.lion-subtitle{
+    margin-top:5px;
+    color:#7f8b9a;
+    font-size:11px;
+}
+
+.lion-live{
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    padding:7px 10px;
+    border-radius:20px;
+
+    background:#09251d;
+    border:1px solid #15543f;
+
+    color:#36e39d;
+    font-size:10px;
+    font-weight:900;
+}
+
+.lion-live span{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#36e39d;
+
+    box-shadow:0 0 10px rgba(54,227,157,.8);
+}
+
+
+/* ===== LION AI PRO LUXURY TERMINAL ===== */
+
+.luxury-header{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:112px;
+    padding:8px 4px 20px;
+    margin-bottom:4px;
+}
+
+.luxury-logo-wrap{
+    position:absolute;
+    right:2px;
+    width:82px;
+    height:82px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.luxury-logo{
+    position:relative;
+    z-index:3;
+    width:64px;
+    height:64px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+
+    background:
+        radial-gradient(circle at 35% 30%,
+        #3b4655 0%,
+        #171f2a 38%,
+        #080d14 72%);
+
+    border:2px solid #dca51c;
+
+    box-shadow:
+        0 0 0 3px rgba(220,165,28,.10),
+        0 0 22px rgba(220,165,28,.28),
+        inset 0 0 18px rgba(220,165,28,.10);
+}
+
+.lion-symbol{
+    position:relative;
+    z-index:3;
+    font-size:34px;
+    filter:
+        drop-shadow(0 0 5px rgba(255,210,70,.65))
+        drop-shadow(0 0 12px rgba(220,165,28,.30));
+}
+
+.luxury-ring{
+    position:absolute;
+    border-radius:50%;
+    border:1px solid rgba(220,165,28,.45);
+}
+
+.ring-one{
+    width:76px;
+    height:76px;
+}
+
+.ring-two{
+    width:84px;
+    height:84px;
+    border-color:rgba(220,165,28,.16);
+}
+
+.luxury-brand{
+    text-align:center;
+    transform:translateX(4px);
+}
+
+.luxury-name{
+    font-size:27px;
+    line-height:1;
+    font-weight:950;
+    letter-spacing:3px;
+
+    color:#f4f6f8;
+
+    text-shadow:
+        0 2px 12px rgba(0,0,0,.7);
+}
+
+.luxury-name span{
+    color:#e3ad25;
+
+    text-shadow:
+        0 0 14px rgba(227,173,37,.35);
+}
+
+.luxury-line{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+
+    margin-top:8px;
+
+    color:#788696;
+    font-size:7px;
+    letter-spacing:2px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.luxury-line i{
+    display:block;
+    width:20px;
+    height:1px;
+    background:linear-gradient(
+        90deg,
+        transparent,
+        #c8951b
+    );
+}
+
+.luxury-line i:last-child{
+    background:linear-gradient(
+        90deg,
+        #c8951b,
+        transparent
+    );
+}
+
+.luxury-persian{
+    margin-top:6px;
+    color:#9aa5b2;
+    font-size:10px;
+}
+
+.luxury-live{
+    position:absolute;
+    left:2px;
+    top:12px;
+
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    padding:7px 10px;
+
+    border-radius:20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(11,43,33,.95),
+            rgba(5,20,16,.95)
+        );
+
+    border:1px solid rgba(54,227,157,.38);
+
+    color:#43e9a5;
+    font-size:9px;
+    font-weight:950;
+    letter-spacing:1px;
+
+    box-shadow:
+        0 0 14px rgba(54,227,157,.08);
+}
+
+.luxury-live-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#36e39d;
+
+    box-shadow:
+        0 0 5px #36e39d,
+        0 0 12px rgba(54,227,157,.65);
+
+    animation:lionLivePulse 1.6s infinite;
+}
+
+@keyframes lionLivePulse{
+    0%,100%{
+        opacity:1;
+        transform:scale(1);
+    }
+
+    50%{
+        opacity:.45;
+        transform:scale(.72);
+    }
+}
+
+@media(max-width:380px){
+
+    .luxury-logo-wrap{
+        right:-4px;
+        transform:scale(.88);
+    }
+
+    .luxury-name{
+        font-size:23px;
+        letter-spacing:2px;
+    }
+
+    .luxury-brand{
+        transform:translateX(0);
+        margin-right:22px;
+    }
+
+    .luxury-line{
+        font-size:6px;
+    }
+}
+
+
+/* ===== PREMIUM LION AI PRO HEADER ===== */
+
+.premium-header{
+    position:relative;
+    min-height:145px;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:12px;
+    overflow:visible;
+}
+
+.premium-brand{
+    text-align:center;
+    z-index:4;
+    transform:translateX(2px);
+}
+
+.premium-title{
+    font-size:31px;
+    font-weight:1000;
+    letter-spacing:4px;
+    line-height:1;
+    color:#f5f7fa;
+    text-shadow:0 3px 18px rgba(0,0,0,.75);
+}
+
+.premium-title span{
+    color:#e5b52d;
+    text-shadow:
+        0 0 10px rgba(229,181,45,.45),
+        0 0 24px rgba(229,181,45,.20);
+}
+
+.premium-subtitle{
+    margin-top:9px;
+    color:#8996a6;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:3px;
+}
+
+.premium-divider{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    margin-top:9px;
+}
+
+.premium-divider i{
+    width:24px;
+    height:1px;
+    display:block;
+    background:linear-gradient(
+        90deg,
+        transparent,
+        #dca51c
+    );
+}
+
+.premium-divider i:last-child{
+    background:linear-gradient(
+        90deg,
+        #dca51c,
+        transparent
+    );
+}
+
+.premium-divider b{
+    color:#687687;
+    font-size:6px;
+    letter-spacing:1.8px;
+    white-space:nowrap;
+}
+
+.premium-persian{
+    margin-top:7px;
+    color:#a2acb8;
+    font-size:10px;
+}
+
+/* ===== LION ORB ===== */
+
+.premium-orb{
+    position:absolute;
+    right:0;
+    top:18px;
+    width:105px;
+    height:105px;
+    z-index:5;
+}
+
+.orb-core{
+    position:absolute;
+    inset:20px;
+    z-index:5;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle at 35% 25%,
+            #4a5563 0%,
+            #202b38 30%,
+            #0c131c 68%,
+            #05080d 100%
+        );
+
+    border:2px solid #e5b52d;
+
+    box-shadow:
+        0 0 0 3px rgba(229,181,45,.08),
+        0 0 24px rgba(229,181,45,.38),
+        inset 0 0 22px rgba(229,181,45,.12);
+}
+
+.orb-lion{
+    font-size:43px;
+    line-height:1;
+    filter:
+        drop-shadow(0 0 5px rgba(255,215,75,.9))
+        drop-shadow(0 0 15px rgba(229,181,45,.5));
+}
+
+.orb-ring{
+    position:absolute;
+    border-radius:50%;
+    border:1px solid rgba(229,181,45,.32);
+}
+
+.orb-ring-outer{
+    inset:2px;
+    border-color:rgba(229,181,45,.13);
+}
+
+.orb-ring-inner{
+    inset:10px;
+    border-color:rgba(229,181,45,.42);
+}
+
+.orb-glow{
+    position:absolute;
+    inset:-20px;
+    z-index:0;
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(229,181,45,.20),
+            rgba(229,181,45,.06) 42%,
+            transparent 72%
+        );
+
+    filter:blur(8px);
+}
+
+/* ===== LIVE ===== */
+
+.premium-status{
+    position:absolute;
+    left:2px;
+    top:12px;
+
+    display:flex;
+    align-items:center;
+    gap:7px;
+
+    padding:7px 10px;
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #0b241c,
+            #07150f
+        );
+
+    border:1px solid rgba(54,227,157,.38);
+
+    box-shadow:
+        0 0 15px rgba(54,227,157,.08);
+}
+
+.premium-status strong{
+    display:block;
+    color:#36e39d;
+    font-size:9px;
+    line-height:1;
+    letter-spacing:1px;
+}
+
+.premium-status small{
+    display:block;
+    color:#687687;
+    font-size:6px;
+    margin-top:3px;
+    letter-spacing:.7px;
+}
+
+.premium-status-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#36e39d;
+
+    box-shadow:
+        0 0 6px #36e39d,
+        0 0 13px rgba(54,227,157,.65);
+
+    animation:premiumLivePulse 1.6s infinite;
+}
+
+@keyframes premiumLivePulse{
+    0%,100%{
+        opacity:1;
+        transform:scale(1);
+    }
+
+    50%{
+        opacity:.4;
+        transform:scale(.7);
+    }
+}
+
+@media(max-width:390px){
+
+    .premium-orb{
+        right:-5px;
+        transform:scale(.88);
+        transform-origin:center;
+    }
+
+    .premium-brand{
+        margin-right:24px;
+    }
+
+    .premium-title{
+        font-size:25px;
+        letter-spacing:3px;
+    }
+
+    .premium-subtitle{
+        font-size:7px;
+        letter-spacing:2px;
+    }
+
+    .premium-divider b{
+        font-size:5px;
+    }
+}
+\n</style>
 </head>
 
 <body>
 
 <div class="app">
 
-<header class="header">
-<div class="logo">🦁 Lion AI PRO</div>
-<div class="subtitle">سامانه هوشمند تحلیل بازار</div>
+
+<header class="premium-header">
+
+    <div class="premium-orb">
+        <div class="orb-ring orb-ring-outer"></div>
+        <div class="orb-ring orb-ring-inner"></div>
+
+        <div class="orb-core">
+            <div class="orb-lion">🦁</div>
+        </div>
+
+        <div class="orb-glow"></div>
+    </div>
+
+    <div class="premium-brand">
+        <div class="premium-title">
+            LION <span>AI</span> PRO
+        </div>
+
+        <div class="premium-subtitle">
+            AI TRADING INTELLIGENCE
+        </div>
+
+        <div class="premium-divider">
+            <i></i>
+            <b>REAL MARKET ENGINE</b>
+            <i></i>
+        </div>
+
+        <div class="premium-persian">
+            هوش مصنوعی معامله‌گر
+        </div>
+    </div>
+
+    <div class="premium-status">
+        <span class="premium-status-dot"></span>
+        <div>
+            <strong>LIVE</strong>
+            <small>REAL DATA</small>
+        </div>
+    </div>
+
 </header>
+
 
 <!-- داشبورد -->
 <section id="dashboard" class="page active">
 
 <div class="card">
-<div class="title">📊 وضعیت بازار</div>
-<div class="muted">EUR/USD · تایم‌فریم ۵ دقیقه</div>
+<div class="market-top">
+    <div>
+        <div class="title">EUR/USD</div>
+        <div class="muted">بازار فارکس · تایم‌فریم ۵ دقیقه</div>
+    </div>
+    <div class="market-live">● LIVE</div>
+</div>
 <div id="price" class="price">--</div>
+<div class="price-change" id="priceChange">در انتظار قیمت بازار</div>
 
-<div id="signal" class="signal wait">در انتظار تحلیل</div>
+<div class="signal-card">
+    <div class="signal-head">
+        <span class="signal-label">سیگنال هوش مصنوعی</span>
+        <span id="signalTime" class="signal-time">--</span>
+    </div>
+
+    <div id="signal" class="signal wait">
+        در انتظار تحلیل
+    </div>
+
+    <div id="signalHint" class="signal-hint">
+        منتظر دریافت داده واقعی بازار
+    </div>
+</div>
 <div class="card" id="realChartCard">
 <div class="title">📈 نمودار واقعی EUR/USD</div>
 <div class="muted" style="margin-bottom:10px">کندل‌های ۵ دقیقه‌ای · داده بازار</div>
@@ -102,24 +1085,70 @@ border-radius:0;margin:0;padding:10px 3px;font-size:11px
 </div>
 
 
-<div class="grid">
-<div class="box">
-<div class="label">امتیاز تحلیل</div>
-<div id="score" class="value">--</div>
+<div class="trade-levels">
+    <div class="trade-box entry-box">
+        <div class="trade-label">ENTRY</div>
+        <div id="entry" class="trade-value">--</div>
+    </div>
+
+    <div class="trade-box sl-box">
+        <div class="trade-label">STOP LOSS</div>
+        <div id="stopLoss" class="trade-value">--</div>
+    </div>
+
+    <div class="trade-box tp-box">
+        <div class="trade-label">TAKE PROFIT</div>
+        <div id="takeProfit" class="trade-value">--</div>
+    </div>
 </div>
 
-<div class="box">
-<div class="label">اطمینان</div>
-<div id="confidence" class="value">--</div>
-</div>
+<div class="ai-metrics">
+
+    <div class="ai-metric">
+        <div class="metric-head">
+            <span>قدرت تحلیل</span>
+            <strong id="score">--</strong>
+        </div>
+        <div class="metric-bar">
+            <div id="scoreBar" class="metric-fill score-fill"></div>
+        </div>
+    </div>
+
+    <div class="ai-metric">
+        <div class="metric-head">
+            <span>اطمینان AI</span>
+            <strong id="confidence">--</strong>
+        </div>
+        <div class="metric-bar">
+            <div id="confidenceBar" class="metric-fill confidence-fill"></div>
+        </div>
+    </div>
+
 </div>
 </div>
 
 <div class="card">
 <div class="title">🧠 خلاصه تحلیل</div>
-<div id="analysis" class="reason">
-در حال دریافت اطلاعات بازار...
+<div class="analysis-summary">
+    <div class="analysis-icon">🧠</div>
+    <div id="analysis" class="analysis-text">
+        در حال دریافت اطلاعات بازار...
+    </div>
 </div>
+</div>
+
+<div class="system-status">
+    <div class="system-status-left">
+        <span id="systemDot" class="system-dot"></span>
+        <div>
+            <div class="system-title">وضعیت اتصال</div>
+            <div id="systemStatus" class="system-subtitle">
+                در حال بررسی اتصال به بازار...
+            </div>
+        </div>
+    </div>
+
+    <div id="systemLatency" class="system-latency">-- ms</div>
 </div>
 
 <button onclick="refreshAll()">🔄 بروزرسانی تحلیل</button>

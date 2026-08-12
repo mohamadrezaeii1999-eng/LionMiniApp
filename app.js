@@ -107,6 +107,8 @@ async function loadSignal() {
     }
 
     try {
+        const requestStarted = performance.now();
+
         const response = await fetch(
             `${API}/signal?symbol=${encodeURIComponent(selectedSymbol)}`,
             {
@@ -114,22 +116,121 @@ async function loadSignal() {
             }
         );
 
+        const requestLatency = Math.round(performance.now() - requestStarted);
+
+        const latencyEl = document.getElementById("systemLatency");
+        if (latencyEl) {
+            latencyEl.textContent = requestLatency + " ms";
+        }
+
+        const statusEl = document.getElementById("systemStatus");
+        const dotEl = document.getElementById("systemDot");
+
+        const data = await response.json();
         const data = await response.json();
 
         console.log("🦁 Lion AI:", selectedSymbol, data);
 
-        if (!response.ok || data.status !== "ok") {
-            throw new Error(data.message || data.error || "خطای تحلیل");
+        if (data.status !== "ok") {
+            const apiMessage = data.message || data.error || "خطای تحلیل";
+
+            const statusEl = document.getElementById("systemStatus");
+            const dotEl = document.getElementById("systemDot");
+
+            if (statusEl && apiMessage.toLowerCase().includes("quota")) {
+                statusEl.textContent = "سهمیه داده بازار موقتاً تمام شده";
+            } else if (statusEl) {
+                statusEl.textContent = apiMessage;
+            }
+
+            if (dotEl) {
+                dotEl.className =
+                    "system-dot " +
+                    (apiMessage.toLowerCase().includes("quota")
+                        ? "warning"
+                        : "offline");
+            }
+
+            setText("price", "---");
+            setText("score", "---");
+            setText("confidence", "---");
+            setText("rsi", "---");
+            setText("ma10", "---");
+            setText("ma30", "---");
+            setText("macd", "---");
+            setText("support", "---");
+            setText("resistance", "---");
+
+            const signalEl = document.getElementById("signal");
+            if (signalEl) {
+                signalEl.textContent = "داده جدید در دسترس نیست";
+                signalEl.className = "signal wait";
+            }
+
+            const priceChangeEl = document.getElementById("priceChange");
+            if (priceChangeEl) {
+                priceChangeEl.textContent = "منتظر دریافت داده بازار";
+                priceChangeEl.style.color = "#8996a6";
+            }
+
+            throw new Error(apiMessage);
         }
 
         lastData = data;
 
         setText("selectedMarket", data.symbol || selectedSymbol);
+        const currentPrice = Number(data.price);
+        const previousPrice = Number(lastData && lastData.price);
+
         setText("price", data.price ?? "---");
+
+        const priceChangeEl = document.getElementById("priceChange");
+
+        if (priceChangeEl && Number.isFinite(currentPrice) && Number.isFinite(previousPrice)) {
+            const diff = currentPrice - previousPrice;
+            const percent = previousPrice !== 0
+                ? (diff / previousPrice) * 100
+                : 0;
+
+            if (diff > 0) {
+                priceChangeEl.textContent =
+                    "▲ +" + diff.toFixed(5) + "  (+" + percent.toFixed(3) + "%)";
+                priceChangeEl.style.color = "#36e39d";
+            } else if (diff < 0) {
+                priceChangeEl.textContent =
+                    "▼ " + diff.toFixed(5) + "  (" + percent.toFixed(3) + "%)";
+                priceChangeEl.style.color = "#ff6875";
+            } else {
+                priceChangeEl.textContent = "● بدون تغییر";
+                priceChangeEl.style.color = "#8996a6";
+            }
+        } else if (priceChangeEl) {
+            priceChangeEl.textContent = "در انتظار قیمت بعدی";
+            priceChangeEl.style.color = "#8996a6";
+        }
         setText("aPrice", data.price ?? "---");
         setText("score", data.score ?? "---");
         setText("aScore", data.score ?? "---");
         setText("confidence", data.confidence != null ? data.confidence + "%" : "---");
+
+        const scoreBar = document.getElementById("scoreBar");
+        const confidenceBar = document.getElementById("confidenceBar");
+
+        if (scoreBar) {
+            const scoreValue = Number(data.score);
+            const scorePercent = Number.isFinite(scoreValue)
+                ? Math.min(100, Math.max(0, Math.abs(scoreValue)))
+                : 0;
+            scoreBar.style.width = scorePercent + "%";
+        }
+
+        if (confidenceBar) {
+            const confidenceValue = Number(data.confidence);
+            const confidencePercent = Number.isFinite(confidenceValue)
+                ? Math.min(100, Math.max(0, confidenceValue))
+                : 0;
+            confidenceBar.style.width = confidencePercent + "%";
+        }
         setText("rsi", data.rsi ?? "---");
         setText("ma10", data.ma10 ?? "---");
         setText("ma30", data.ma30 ?? "---");
@@ -146,6 +247,28 @@ async function loadSignal() {
             signal.className =
                 "signal " +
                 (SIGNAL_CLASS[data.signal] || "wait");
+
+            const signalHint = document.getElementById("signalHint");
+            const signalTime = document.getElementById("signalTime");
+
+            if (signalHint) {
+                const hints = {
+                    BUY: "شرایط فعلی به نفع ورود خرید است",
+                    SELL: "شرایط فعلی به نفع ورود فروش است",
+                    WAIT: "شرایط کافی برای ورود مطمئن وجود ندارد"
+                };
+
+                signalHint.textContent =
+                    hints[data.signal] || "در انتظار تحلیل واقعی بازار";
+            }
+
+            if (signalTime) {
+                signalTime.textContent =
+                    new Date().toLocaleTimeString("fa-IR", {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    });
+            }
         }
 
         const analysis = document.getElementById("analysis");
@@ -852,6 +975,28 @@ async function loadRealChart() {
 
         ctx.clearRect(0, 0, width, height);
 
+        /* ===== UI 10.18 CHART GRID ===== */
+        ctx.save();
+
+        const gridLines = 5;
+        ctx.strokeStyle = "rgba(137,150,166,.12)";
+        ctx.lineWidth = 1;
+        ctx.font = "10px Tahoma, Arial";
+        ctx.fillStyle = "#687687";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+
+        for (let g = 0; g <= gridLines; g++) {
+            const gy = 20 + (height - 40) * (g / gridLines);
+
+            ctx.beginPath();
+            ctx.moveTo(8, gy);
+            ctx.lineTo(width - 8, gy);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+
         const highs = candles.map(c => Number(c.high));
         const lows = candles.map(c => Number(c.low));
 
@@ -866,6 +1011,26 @@ async function loadRealChart() {
         function y(price) {
             return pad + ((max - price) / range) * chartHeight;
         }
+
+        /* قیمت‌های محور راست */
+        ctx.save();
+        ctx.font = "10px Tahoma, Arial";
+        ctx.fillStyle = "#687687";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+
+        for (let g = 0; g <= 4; g++) {
+            const priceLevel = max - (range * g / 4);
+            const gy = y(priceLevel);
+
+            ctx.fillText(
+                priceLevel.toFixed(5),
+                width - 5,
+                gy
+            );
+        }
+
+        ctx.restore();
 
         candles.forEach((candle, i) => {
             const open = Number(candle.open);
@@ -898,6 +1063,53 @@ async function loadRealChart() {
         });
 
         const last = candles[candles.length - 1];
+
+        /* ===== UI 10.19 LAST PRICE LINE ===== */
+        const lastPrice = Number(last.close);
+
+        if (Number.isFinite(lastPrice)) {
+            const lastY = y(lastPrice);
+
+            ctx.save();
+
+            ctx.beginPath();
+            ctx.setLineDash([5, 4]);
+            ctx.moveTo(8, lastY);
+            ctx.lineTo(width - 8, lastY);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "#dca51c";
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+            ctx.font = "bold 10px Tahoma, Arial";
+            ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
+
+            const labelWidth = 68;
+            const labelHeight = 20;
+            const labelX = width - labelWidth - 4;
+            const labelY = Math.max(
+                2,
+                Math.min(height - labelHeight - 2, lastY - labelHeight / 2)
+            );
+
+            ctx.fillStyle = "#dca51c";
+            ctx.fillRect(
+                labelX,
+                labelY,
+                labelWidth,
+                labelHeight
+            );
+
+            ctx.fillStyle = "#080b10";
+            ctx.fillText(
+                lastPrice.toFixed(5),
+                width - 8,
+                labelY + labelHeight / 2
+            );
+
+            ctx.restore();
+        }
 
         const lowEl = document.getElementById("chartLow");
         const highEl = document.getElementById("chartHigh");
