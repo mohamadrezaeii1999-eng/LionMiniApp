@@ -11,7 +11,8 @@ DEFAULT_SYMBOL = "EUR/USD"
 # جلوگیری از درخواست‌های تکراری به Twelve Data
 # ------------------------------------------------------------
 DATA_CACHE = {}
-CACHE_TTL = 20
+CACHE_TTL = 3600
+CACHE_FILE = "market_candle_cache.json"
 
 TIMEFRAMES = {
     "5min": "5min",
@@ -20,7 +21,71 @@ TIMEFRAMES = {
 }
 
 
+def _load_cache():
+    if not DATA_CACHE and os.path.exists(CACHE_FILE):
+        try:
+            import json
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                DATA_CACHE.update(json.load(f))
+        except Exception:
+            pass
+    return DATA_CACHE
+
+
+def _save_cache():
+    try:
+        import json
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(DATA_CACHE, f)
+    except Exception:
+        pass
+
+
+def _make_timeframe(candles, interval):
+    if interval == "5min":
+        return candles
+
+    try:
+        import pandas as pd
+
+        df = pd.DataFrame(candles)
+        df["datetime"] = pd.to_datetime(df["datetime"])
+        df = df.set_index("datetime")
+
+        rule = {
+            "15min": "15min",
+            "1h": "1h"
+        }.get(interval)
+
+        if not rule:
+            return candles
+
+        df = df.resample(rule).agg({
+            "open": "first",
+            "high": "max",
+            "low": "min",
+            "close": "last"
+        }).dropna()
+
+        df = df.reset_index()
+
+        return [
+            {
+                "datetime": row["datetime"].strftime("%Y-%m-%d %H:%M:%S"),
+                "open": float(row["open"]),
+                "high": float(row["high"]),
+                "low": float(row["low"]),
+                "close": float(row["close"])
+            }
+            for _, row in df.iterrows()
+        ]
+
+    except Exception:
+        return candles
+
+
 def get_data(symbol, interval, outputsize=200):
+
     key = os.getenv("TWELVE_DATA_API_KEY")
 
     if not key:
@@ -28,32 +93,34 @@ def get_data(symbol, interval, outputsize=200):
 
     symbol = symbol.upper().strip()
 
-    cache_key = (symbol, interval, outputsize)
+    cache = _load_cache()
     now = time.time()
 
-    # Cache duration based on timeframe
-    cache_ttl = {
-        "5min": 60,
-        "15min": 180,
-        "1h": 300
-    }.get(interval, CACHE_TTL)
-
-    # Return cached data if still fresh
-    cached = DATA_CACHE.get(cache_key)
+    cached = cache.get(symbol)
 
     if cached:
-        cached_time, cached_data = cached
 
-        if now - cached_time < cache_ttl:
-            return cached_data, None
+        updated_at = float(cached.get("updated_at", 0))
+        candles = cached.get("candles", [])
+
+        if candles and now - updated_at < CACHE_TTL:
+
+            result = _make_timeframe(
+                candles,
+                interval
+            )
+
+            if len(result) >= 60:
+                return result[-outputsize:], None
 
     try:
+
         response = requests.get(
             API_URL,
             params={
                 "symbol": symbol,
-                "interval": interval,
-                "outputsize": outputsize,
+                "interval": "5min",
+                "outputsize": 800,
                 "apikey": key
             },
             timeout=25
@@ -62,6 +129,17 @@ def get_data(symbol, interval, outputsize=200):
         data = response.json()
 
         if "values" not in data:
+
+            if cached and cached.get("candles"):
+
+                result = _make_timeframe(
+                    cached["candles"],
+                    interval
+                )
+
+                if len(result) >= 60:
+                    return result[-outputsize:], None
+
             return None, data.get(
                 "message",
                 "Market data error"
@@ -70,7 +148,9 @@ def get_data(symbol, interval, outputsize=200):
         candles = []
 
         for item in reversed(data["values"]):
+
             try:
+
                 candles.append({
                     "datetime": item["datetime"],
                     "open": float(item["open"]),
@@ -78,22 +158,41 @@ def get_data(symbol, interval, outputsize=200):
                     "low": float(item["low"]),
                     "close": float(item["close"])
                 })
+
             except (KeyError, ValueError, TypeError):
                 continue
 
         if len(candles) < 60:
             return None, "Not enough candles"
 
-        # Save successful request in cache
-        DATA_CACHE[cache_key] = (
-            now,
-            candles
+        cache[symbol] = {
+            "updated_at": now,
+            "candles": candles
+        }
+
+        _save_cache()
+
+        result = _make_timeframe(
+            candles,
+            interval
         )
 
-        return candles, None
+        return result[-outputsize:], None
 
     except Exception as exc:
+
+        if cached and cached.get("candles"):
+
+            result = _make_timeframe(
+                cached["candles"],
+                interval
+            )
+
+            if len(result) >= 60:
+                return result[-outputsize:], None
+
         return None, str(exc)
+
 
 def sma(values, period):
     if len(values) < period:
