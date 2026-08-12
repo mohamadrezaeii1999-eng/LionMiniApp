@@ -342,6 +342,39 @@ def paper_auto():
     signal = best["signal"]
     entry = float(best["price"])
 
+    # --------------------------------------------------------
+    # Fresh Data Guard
+    # معامله خودکار فقط با داده تازه مجاز است.
+    # --------------------------------------------------------
+    try:
+        from lion_engine_v37 import get_data_freshness
+
+        freshness = get_data_freshness(symbol)
+
+        if not freshness.get("fresh", False):
+            return jsonify({
+                "status": "ok",
+                "mode": "auto_paper",
+                "action": "WAIT",
+                "message": "داده بازار برای معامله خودکار به اندازه کافی تازه نیست",
+                "candidate": best,
+                "freshness": freshness,
+                "wallet": wallet,
+                "closed": check.get("closed", [])
+            })
+
+    except Exception as exc:
+        return jsonify({
+            "status": "ok",
+            "mode": "auto_paper",
+            "action": "WAIT",
+            "message": "Fresh Data Guard فعال نشد؛ معامله متوقف شد",
+            "error": str(exc),
+            "candidate": best,
+            "wallet": wallet,
+            "closed": check.get("closed", [])
+        })
+
     # چون بعضی نتایج اسکن ممکن است SL/TP نداشته باشند،
     # برای Paper از ATR استفاده می‌کنیم.
     atr = float(best.get("atr") or entry * 0.0005)

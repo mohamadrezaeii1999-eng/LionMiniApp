@@ -86,6 +86,12 @@ def _make_timeframe(candles, interval):
 
 QUOTA_COOLDOWN_FILE = "twelve_quota_cooldown.json"
 QUOTA_COOLDOWN = 3600
+MAX_TRADE_DATA_AGE = {
+    "5min": 420,
+    "15min": 960,
+    "1h": 3660
+}
+
 
 
 def _quota_blocked():
@@ -229,6 +235,57 @@ def get_data(symbol, interval, outputsize=200):
                 return result[-outputsize:], None
 
         return None, str(exc)
+
+
+
+def get_data_freshness(symbol, interval="5min"):
+    """
+    بررسی تازگی آخرین کندل ذخیره‌شده.
+    برای Auto Trading اگر داده بیش از حد قدیمی باشد fresh=False برمی‌گرداند.
+    """
+
+    max_age = MAX_TRADE_DATA_AGE.get(interval, 420)
+
+    try:
+        cache = _load_cache()
+        symbol = symbol.upper().strip()
+        cached = cache.get(symbol)
+
+        if not cached:
+            return {
+                "fresh": False,
+                "age_seconds": None,
+                "max_age_seconds": max_age,
+                "reason": "no cache"
+            }
+
+        candles = cached.get("candles", [])
+
+        if not candles:
+            return {
+                "fresh": False,
+                "age_seconds": None,
+                "max_age_seconds": max_age,
+                "reason": "no candles"
+            }
+
+        updated_at = float(cached.get("updated_at", 0))
+        age = time.time() - updated_at
+
+        return {
+            "fresh": age <= max_age,
+            "age_seconds": round(age, 1),
+            "max_age_seconds": max_age,
+            "reason": "fresh" if age <= max_age else "stale"
+        }
+
+    except Exception as exc:
+        return {
+            "fresh": False,
+            "age_seconds": None,
+            "max_age_seconds": max_age,
+            "reason": str(exc)
+        }
 
 
 def sma(values, period):
