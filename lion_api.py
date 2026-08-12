@@ -388,48 +388,74 @@ AUTO_SCAN_ENABLED = True
 def auto_scanner_worker():
     print("AUTO SCANNER WORKER STARTED")
 
+    global LAST_SCAN_SYMBOL, LAST_SCAN_TIME, AUTO_SCANNER_STATUS
+
     while AUTO_SCAN_ENABLED:
         try:
             with app.test_request_context():
-                # اول فقط یک جفت‌ارز را اسکن کن
                 scan_response = scan()
+                scan_data = scan_response.get_json() or {}
 
-                try:
-                    scan_data = scan_response.get_json()
+                batch = scan_data.get("batch", [])
+                errors = scan_data.get("errors", {})
+                successful = int(scan_data.get("successful", 0))
 
-                    global LAST_SCAN_SYMBOL, LAST_SCAN_TIME, AUTO_SCANNER_STATUS
+                LAST_SCAN_SYMBOL = batch[-1] if batch else None
+                LAST_SCAN_TIME = time.time()
 
-                    batch = scan_data.get("batch", [])
-                    LAST_SCAN_SYMBOL = batch[-1] if batch else None
-                    LAST_SCAN_TIME = time.time()
-                    AUTO_SCANNER_STATUS = "running"
+                # اگر Twelve Data سهمیه‌اش تمام شده، Worker وارد Standby شود
+                error_text = " ".join(
+                    str(v) for v in errors.values()
+                ).lower()
+
+                quota_error = (
+                    "quota" in error_text
+                    or "credits" in error_text
+                    or "run out" in error_text
+                    or "daily limit" in error_text
+                )
+
+                if quota_error and successful == 0:
+                    AUTO_SCANNER_STATUS = "quota_standby"
 
                     print(
-                        "SCANNED:",
-                        batch,
-                        "successful=",
-                        scan_data.get("successful", 0),
-                        "errors=",
-                        scan_data.get("failed", 0)
+                        "AUTO SCANNER: QUOTA STANDBY",
+                        "errors=", len(errors)
                     )
-                except Exception:
-                    print("SCAN COMPLETED")
 
-                # سپس از نتایج ذخیره‌شده برای Paper Trading استفاده کن
-                result = paper_auto()
+                    time.sleep(3600)
+                    continue
 
-                try:
-                    data = result.get_json()
-                    print(
-                        "AUTO PAPER:",
-                        data.get("action"),
-                        data.get("message", ""),
-                        data.get("wallet", {})
-                    )
-                except Exception:
-                    print("AUTO PAPER COMPLETED")
+                AUTO_SCANNER_STATUS = "running"
+
+                print(
+                    "SCANNED:",
+                    batch,
+                    "successful=",
+                    successful,
+                    "errors=",
+                    scan_data.get("failed", 0)
+                )
+
+                # فقط وقتی نتیجه معتبر داریم Paper Trading اجرا شود
+                if successful > 0:
+                    result = paper_auto()
+
+                    try:
+                        data = result.get_json() or {}
+                        print(
+                            "AUTO PAPER:",
+                            data.get("action"),
+                            data.get("message", ""),
+                            data.get("wallet", {})
+                        )
+                    except Exception:
+                        print("AUTO PAPER COMPLETED")
+                else:
+                    print("AUTO PAPER: SKIPPED - NO VALID MARKET DATA")
 
         except Exception as exc:
+            AUTO_SCANNER_STATUS = "error"
             print(f"AUTO SCANNER ERROR: {exc}")
 
         time.sleep(AUTO_SCAN_INTERVAL)
