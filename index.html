@@ -1513,7 +1513,183 @@ button[onclick="refreshAll()"]:active{
         linear-gradient(145deg,#0d151d,#070c12) !important;
 }
 
-</style>
+<style>
+/* ===== LION AI PRO — PREMIUM BOTTOM NAV ===== */
+.nav button,.bottom-nav button,.page-nav button,.nav-bar button{
+position:relative!important;
+border:1px solid transparent!important;
+border-radius:15px!important;
+background:linear-gradient(145deg,#0d151e,#080e15)!important;
+color:#718092!important;
+font-weight:900!important;
+transition:.2s!important;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important;
+}
+.nav button:active,.bottom-nav button:active,.page-nav button:active,.nav-bar button:active{
+transform:scale(.92)!important;
+}
+.nav button.active,.bottom-nav button.active,.page-nav button.active,.nav-bar button.active{
+color:#f1c84a!important;
+background:linear-gradient(145deg,rgba(229,181,45,.16),rgba(229,181,45,.035))!important;
+border-color:rgba(229,181,45,.28)!important;
+box-shadow:0 0 18px rgba(229,181,45,.10),inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+.nav button.active:after,.bottom-nav button.active:after,.page-nav button.active:after,.nav-bar button.active:after{
+content:"";position:absolute;left:28%;right:28%;bottom:4px;height:2px;border-radius:5px;background:#e5b52d;box-shadow:0 0 8px rgba(229,181,45,.8);
+}
+
+/* ===== LION AI PRO — NAV CLICK + LUXURY FIX ===== */
+
+.nav{
+    position:relative !important;
+    z-index:9999 !important;
+    pointer-events:auto !important;
+}
+
+.nav-inner{
+    position:relative !important;
+    z-index:10000 !important;
+    display:flex !important;
+    width:100% !important;
+    pointer-events:auto !important;
+}
+
+.nav-inner button{
+    position:relative !important;
+    z-index:10001 !important;
+    pointer-events:auto !important;
+    touch-action:manipulation !important;
+    -webkit-tap-highlight-color:transparent !important;
+    cursor:pointer !important;
+}
+
+.nav::before,
+.nav::after,
+.nav-inner::before,
+.nav-inner::after{
+    pointer-events:none !important;
+}
+
+.nav-inner button:hover{
+    transform:translateY(-2px) !important;
+}
+
+.nav-inner button:active{
+    transform:scale(.92) !important;
+}
+
+.nav-inner button.active{
+    color:#f4c84a !important;
+    background:linear-gradient(
+        145deg,
+        rgba(229,181,45,.16),
+        rgba(229,181,45,.035)
+    ) !important;
+    border-color:rgba(229,181,45,.30) !important;
+    box-shadow:
+        0 0 18px rgba(229,181,45,.10),
+        inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+/* ===== LION NAV TOUCH TEST ===== */
+
+/* ===== LION NAV TOUCH TEST ===== */
+
+.nav,
+.nav-inner{
+    position:relative !important;
+    z-index:99999 !important;
+    pointer-events:auto !important;
+}
+
+.nav-inner button{
+    position:relative !important;
+    z-index:100000 !important;
+    pointer-events:auto !important;
+    touch-action:manipulation !important;
+}
+
+
+/* ===== LION AI PRO — BOTTOM NAV FINAL CLICK LAYER ===== */
+
+.nav{
+    position:relative !important;
+    z-index:2147483000 !important;
+    isolation:isolate !important;
+    pointer-events:auto !important;
+}
+
+.nav-inner{
+    position:relative !important;
+    z-index:2147483001 !important;
+    isolation:isolate !important;
+    display:flex !important;
+    pointer-events:auto !important;
+}
+
+.nav-inner button{
+    position:relative !important;
+    z-index:2147483002 !important;
+    pointer-events:auto !important;
+    user-select:none !important;
+    -webkit-user-select:none !important;
+    touch-action:manipulation !important;
+    cursor:pointer !important;
+}
+
+/* هیچ pseudo-elementی اجازه گرفتن کلیک نداشته باشد */
+.nav::before,
+.nav::after,
+.nav-inner::before,
+.nav-inner::after,
+.nav-inner button::before,
+.nav-inner button::after{
+    pointer-events:none !important;
+}
+
+
+/* ===== LION AI PRO — NAV OVERLAY KILLER ===== */
+
+.nav{
+    position:relative !important;
+    z-index:2147483640 !important;
+    pointer-events:auto !important;
+    isolation:isolate !important;
+}
+
+.nav-inner{
+    position:relative !important;
+    z-index:2147483641 !important;
+    pointer-events:auto !important;
+}
+
+.nav-inner button{
+    position:relative !important;
+    z-index:2147483642 !important;
+    pointer-events:auto !important;
+}
+
+/* عناصر تزئینی نباید لمس را بگیرند */
+.nav *::before,
+.nav *::after{
+    pointer-events:none !important;
+}
+
+/* لایه‌های تزئینی صفحات */
+#dashboard::before,
+#dashboard::after,
+#analysisPage::before,
+#analysisPage::after,
+#markets::before,
+#markets::after,
+#history::before,
+#history::after,
+#settings::before,
+#settings::after{
+    pointer-events:none !important;
+}
+
+/* LION FINAL NAV CSS */ .nav{position:relative!important;z-index:999999!important;pointer-events:auto!important}.nav-inner{position:relative!important;z-index:1000000!important;display:flex!important;pointer-events:auto!important}.nav-inner button{position:relative!important;z-index:1000001!important;pointer-events:auto!important;touch-action:manipulation!important}/* LION AUTO TRADING PANEL */ .auto-trade{margin-top:14px;padding:15px;border:1px solid rgba(229,181,45,.18);border-radius:18px;background:linear-gradient(145deg,#111a24,#080e15);box-shadow:0 10px 25px rgba(0,0,0,.25)} .auto-head{display:flex;justify-content:space-between;align-items:center}.auto-title{font-size:13px;font-weight:1000;color:#f1f4f7}.auto-status{font-size:8px;color:#718092}.auto-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.auto-box{padding:10px;border-radius:12px;background:#0b131c;border:1px solid #1d2a38}.auto-box span{display:block;color:#718092;font-size:8px}.auto-box strong{display:block;margin-top:5px;color:#edf1f5;font-size:13px}.auto-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.auto-actions button{min-height:42px;border-radius:12px;border:1px solid #263646;background:#101a24;color:#dce3ea;font-weight:900}.auto-actions .auto-start{border-color:rgba(54,227,157,.35);color:#36e39d}.auto-actions .auto-stop{border-color:rgba(255,91,105,.35);color:#ff5b69}</style>\n</style>
 </head>
 
 <body>
@@ -1846,7 +2022,7 @@ button[onclick="refreshAll()"]:active{
 
 <div class="card">
 <div class="muted">بازار فعال</div>
-<div id="selectedMarket" class="title">EUR/USD</div>
+<div id="selectedMarket" class="title">EUR/USD</div><div class="auto-trade" id="autoTradingPanel"><div class="auto-head"><div class="auto-title">🤖 AUTO TRADING</div><div class="auto-status" id="autoStatus">● آماده</div></div><div class="auto-grid"><div class="auto-box"><span>بازار</span><strong id="autoMarket">EUR/USD</strong></div><div class="auto-box"><span>حالت</span><strong id="autoMode">PAPER</strong></div><div class="auto-box"><span>ریسک</span><strong id="autoRisk">1%</strong></div><div class="auto-box"><span>حداقل اطمینان</span><strong id="autoConfidence">70%</strong></div></div><div class="auto-actions"><button type="button" class="auto-start" onclick="startAutoTrading()">▶ شروع خودکار</button><button type="button" class="auto-stop" onclick="stopAutoTrading()">■ توقف</button></div></div>
 </div>
 
 </section>
@@ -1903,27 +2079,27 @@ button[onclick="refreshAll()"]:active{
 <nav class="nav">
 <div class="nav-inner">
 
-<button id="nav-dashboard" class="active"
+<button type="button" id="nav-dashboard" class="active"
 onclick="showPage('dashboard',this)">
 🏠<br>داشبورد
 </button>
 
-<button id="nav-analysis"
+<button type="button" id="nav-analysis"
 onclick="showPage('analysisPage',this)">
 📊<br>تحلیل
 </button>
 
-<button id="nav-markets"
+<button type="button" id="nav-markets"
 onclick="showPage('markets',this)">
 💱<br>بازارها
 </button>
 
-<button id="nav-history"
+<button type="button" id="nav-history"
 onclick="showPage('history',this)">
 🧾<br>تاریخچه
 </button>
 
-<button id="nav-settings"
+<button type="button" id="nav-settings"
 onclick="showPage('settings',this)">
 ⚙️<br>تنظیمات
 </button>
@@ -1932,7 +2108,33 @@ onclick="showPage('settings',this)">
 </nav>
 
 
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    try {
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+
+            tg.ready();
+            tg.expand();
+
+            console.log("🦁 TELEGRAM WEB APP READY");
+            console.log("Telegram user:", tg.initDataUnsafe?.user || null);
+        } else {
+            console.log("🌐 NORMAL BROWSER MODE");
+        }
+    } catch (e) {
+        console.error("Telegram WebApp error:", e);
+    }
+});
+</script>
 <script src="app.js"></script>
 
-</body>
+
+
+
+
+
+
+<script>document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".nav-inner button").forEach(function(b){b.onclick=function(e){e.preventDefault();var id={"nav-dashboard":"dashboard","nav-analysis":"analysisPage","nav-markets":"markets","nav-history":"history","nav-settings":"settings"}[b.id];if(!id)return;document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");p.style.display="none"});var t=document.getElementById(id);if(t){t.classList.add("active");t.style.display="block"}document.querySelectorAll(".nav-inner button").forEach(function(x){x.classList.remove("active")});b.classList.add("active");window.scrollTo(0,0)}});console.log("LION NAV READY")});</script><script>let lionAutoTrading=false;function startAutoTrading(){lionAutoTrading=true;var e=document.getElementById("autoStatus");if(e)e.textContent="● در حال اجرا";var m=document.getElementById("autoMode");if(m)m.textContent="PAPER • ON";console.log("LION AUTO TRADING STARTED")}function stopAutoTrading(){lionAutoTrading=false;var e=document.getElementById("autoStatus");if(e)e.textContent="● متوقف";var m=document.getElementById("autoMode");if(m)m.textContent="PAPER • OFF";console.log("LION AUTO TRADING STOPPED")}window.startAutoTrading=startAutoTrading;window.stopAutoTrading=stopAutoTrading;</script></body>
 </html>
