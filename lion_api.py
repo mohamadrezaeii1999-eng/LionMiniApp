@@ -574,3 +574,316 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=port
     )
+
+# ============================================================
+# 🦁 LION AI PRO — MINI APP FULL API CONNECT
+# ============================================================
+
+from flask import jsonify, request
+
+# ------------------------------------------------------------
+# WALLET
+# ------------------------------------------------------------
+
+@app.get("/wallet")
+def miniapp_wallet():
+    try:
+        # اول Paper Wallet
+        try:
+            from paper_trading import get_wallet
+            wallet = get_wallet()
+
+            return jsonify({
+                "status": "ok",
+                "mode": "paper",
+                "wallet": wallet
+            })
+        except Exception:
+            pass
+
+        # سپس Wallet Engine واقعی، اگر موجود بود
+        try:
+            import wallet_engine
+
+            return jsonify({
+                "status": "ok",
+                "mode": "real",
+                "toman": wallet_engine.wallet.get("toman", 0),
+                "usd": wallet_engine.wallet.get("usd", 0),
+                "crypto": wallet_engine.wallet.get("crypto", {}),
+                "history": wallet_engine.wallet.get("history", [])
+            })
+        except Exception as exc:
+            return jsonify({
+                "status": "ok",
+                "mode": "paper",
+                "wallet": {},
+                "message": "Wallet engine در Railway فعال نیست",
+                "error": str(exc)
+            })
+
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "error": str(exc)
+        }), 500
+
+
+# ------------------------------------------------------------
+# HISTORY
+# ------------------------------------------------------------
+
+@app.get("/history")
+def miniapp_history():
+    try:
+        import os
+        import json
+
+        possible_files = [
+            "trade_history.json",
+            "paper_history.json",
+            "paper_wallet.json"
+        ]
+
+        for filename in possible_files:
+            if os.path.exists(filename):
+                try:
+                    with open(filename, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+
+                    return jsonify({
+                        "status": "ok",
+                        "file": filename,
+                        "history": data
+                    })
+                except Exception:
+                    continue
+
+        # اگر paper_trading تاریخچه دارد
+        try:
+            from paper_trading import get_wallet
+
+            wallet = get_wallet()
+
+            return jsonify({
+                "status": "ok",
+                "history": wallet.get("history", []),
+                "trades": wallet.get("trades", [])
+            })
+        except Exception:
+            pass
+
+        return jsonify({
+            "status": "ok",
+            "history": [],
+            "trades": []
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "error": str(exc),
+            "history": []
+        }), 500
+
+
+# ------------------------------------------------------------
+# PAPER STATUS
+# ------------------------------------------------------------
+
+@app.get("/paper/status")
+def miniapp_paper_status():
+    try:
+        # سیستم paper_trading اصلی
+        try:
+            from paper_trading import get_wallet
+
+            wallet = get_wallet()
+
+            enabled = bool(
+                wallet.get("enabled", False)
+                or wallet.get("running", False)
+                or wallet.get("auto_trading", False)
+            )
+
+            return jsonify({
+                "status": "ok",
+                "enabled": enabled,
+                "mode": "PAPER",
+                "wallet": wallet
+            })
+
+        except Exception:
+            pass
+
+        # auto scanner
+        enabled = globals().get(
+            "AUTO_SCAN_ENABLED",
+            False
+        )
+
+        return jsonify({
+            "status": "ok",
+            "enabled": bool(enabled),
+            "mode": "PAPER",
+            "wallet": {}
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "enabled": False,
+            "error": str(exc)
+        }), 500
+
+
+# ------------------------------------------------------------
+# PAPER START
+# ------------------------------------------------------------
+
+@app.post("/paper/start")
+def miniapp_paper_start():
+    try:
+
+        # اگر paper_trading start داشته باشد
+        try:
+            import paper_trading
+
+            if hasattr(paper_trading, "start"):
+                result = paper_trading.start()
+
+                return jsonify({
+                    "ok": True,
+                    "status": "ok",
+                    "enabled": True,
+                    "mode": "PAPER",
+                    "state": result
+                })
+        except Exception as exc:
+            print("paper_trading.start:", exc)
+
+        # Auto scanner را روشن کن
+        global AUTO_SCAN_ENABLED
+
+        AUTO_SCAN_ENABLED = True
+
+        return jsonify({
+            "ok": True,
+            "status": "ok",
+            "enabled": True,
+            "mode": "PAPER",
+            "message": "Paper Trading فعال شد"
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "status": "error",
+            "enabled": False,
+            "error": str(exc)
+        }), 500
+
+
+# ------------------------------------------------------------
+# PAPER STOP
+# ------------------------------------------------------------
+
+@app.post("/paper/stop")
+def miniapp_paper_stop():
+    try:
+
+        # اگر paper_trading stop داشته باشد
+        try:
+            import paper_trading
+
+            if hasattr(paper_trading, "stop"):
+                result = paper_trading.stop()
+
+                return jsonify({
+                    "ok": True,
+                    "status": "ok",
+                    "enabled": False,
+                    "mode": "PAPER",
+                    "state": result
+                })
+        except Exception as exc:
+            print("paper_trading.stop:", exc)
+
+        # Auto scanner را خاموش کن
+        global AUTO_SCAN_ENABLED
+
+        AUTO_SCAN_ENABLED = False
+
+        return jsonify({
+            "ok": True,
+            "status": "ok",
+            "enabled": False,
+            "mode": "PAPER",
+            "message": "Paper Trading متوقف شد"
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "status": "error",
+            "enabled": False,
+            "error": str(exc)
+        }), 500
+
+
+# ------------------------------------------------------------
+# PAPER WALLET
+# ------------------------------------------------------------
+
+@app.get("/paper/wallet")
+def miniapp_paper_wallet():
+    try:
+        from paper_trading import get_wallet
+
+        return jsonify({
+            "status": "ok",
+            **get_wallet()
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "error": str(exc)
+        }), 500
+
+
+# ------------------------------------------------------------
+# PAPER RESET
+# ------------------------------------------------------------
+
+@app.post("/paper/reset")
+def miniapp_paper_reset():
+    try:
+        from paper_trading import reset_wallet
+
+        return jsonify(reset_wallet())
+
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "error": str(exc)
+        }), 500
+
+
+# ------------------------------------------------------------
+# MINI APP HEALTH
+# ------------------------------------------------------------
+
+@app.get("/miniapp/status")
+def miniapp_status():
+    return jsonify({
+        "status": "ok",
+        "app": "Lion AI PRO",
+        "engine": "Lion AI PRO V3.7",
+        "mini_app": True,
+        "markets": len(FOREX_PAIRS)
+    })
+
+
+print("🦁 LION AI PRO FULL MINI APP API READY")
+
