@@ -689,10 +689,12 @@ def miniapp_history():
 
 # ------------------------------------------------------------
 # PAPER STATUS
+PAPER_TRADING_ENABLED = False
 # ------------------------------------------------------------
 
 @app.get("/paper/status")
 def miniapp_paper_status():
+    global PAPER_TRADING_ENABLED
     try:
         # سیستم paper_trading اصلی
         try:
@@ -743,6 +745,8 @@ def miniapp_paper_status():
 
 @app.post("/paper/start")
 def miniapp_paper_start():
+    global PAPER_TRADING_ENABLED
+    PAPER_TRADING_ENABLED = True
     try:
 
         # اگر paper_trading start داشته باشد
@@ -790,6 +794,8 @@ def miniapp_paper_start():
 
 @app.post("/paper/stop")
 def miniapp_paper_stop():
+    global PAPER_TRADING_ENABLED
+    PAPER_TRADING_ENABLED = False
     try:
 
         # اگر paper_trading stop داشته باشد
