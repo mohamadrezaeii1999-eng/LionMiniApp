@@ -1489,30 +1489,3 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* ===== LION AI PRO — AUTO TRADING BUTTON FIX ===== */
-document.addEventListener("DOMContentLoaded", function () {
-
-    const startBtn = document.getElementById("autoStartBtn");
-    const stopBtn = document.getElementById("autoStopBtn");
-
-    if (startBtn) {
-        startBtn.addEventListener("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            console.log("🦁 START AUTO TRADING CLICKED");
-            startAutoTrading();
-        });
-    }
-
-    if (stopBtn) {
-        stopBtn.addEventListener("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            console.log("🦁 STOP AUTO TRADING CLICKED");
-            stopAutoTrading();
-        });
-    }
-
-    console.log("🦁 AUTO TRADING BUTTONS CONNECTED");
-});
