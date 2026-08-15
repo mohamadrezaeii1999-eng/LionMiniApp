@@ -692,10 +692,24 @@ def miniapp_history():
 PAPER_TRADING_ENABLED = False
 # ------------------------------------------------------------
 
+
+PAPER_STATE_FILE = "paper_state.json"
+
+def get_paper_enabled():
+    try:
+        import json
+        with open(PAPER_STATE_FILE, "r") as f:
+            return bool(json.load(f).get("enabled", False))
+    except Exception:
+        return False
+
+def set_paper_enabled(value):
+    import json
+    with open(PAPER_STATE_FILE, "w") as f:
+        json.dump({"enabled": bool(value)}, f)
+
 @app.get("/paper/status")
 def miniapp_paper_status():
-    global PAPER_TRADING_ENABLED
-
     try:
         wallet = {}
 
@@ -707,7 +721,7 @@ def miniapp_paper_status():
 
         return jsonify({
             "status": "ok",
-            "enabled": bool(PAPER_TRADING_ENABLED),
+            "enabled": get_paper_enabled(),
             "mode": "PAPER",
             "wallet": wallet
         })
@@ -715,7 +729,7 @@ def miniapp_paper_status():
     except Exception as exc:
         return jsonify({
             "status": "error",
-            "enabled": bool(PAPER_TRADING_ENABLED),
+            "enabled": get_paper_enabled(),
             "mode": "PAPER",
             "error": str(exc)
         }), 500
@@ -723,31 +737,15 @@ def miniapp_paper_status():
 
 @app.post("/paper/start")
 def miniapp_paper_start():
-    global PAPER_TRADING_ENABLED
-    PAPER_TRADING_ENABLED = True
     try:
+        set_paper_enabled(True)
 
-        # اگر paper_trading start داشته باشد
         try:
             import paper_trading
-
             if hasattr(paper_trading, "start"):
-                result = paper_trading.start()
-
-                return jsonify({
-                    "ok": True,
-                    "status": "ok",
-                    "enabled": True,
-                    "mode": "PAPER",
-                    "state": result
-                })
+                paper_trading.start()
         except Exception as exc:
-            print("paper_trading.start:", exc)
-
-        # Auto scanner را روشن کن
-        global AUTO_SCAN_ENABLED
-
-        AUTO_SCAN_ENABLED = True
+            print("PAPER START INTERNAL:", exc)
 
         return jsonify({
             "ok": True,
@@ -758,45 +756,28 @@ def miniapp_paper_start():
         })
 
     except Exception as exc:
+        set_paper_enabled(False)
+
         return jsonify({
             "ok": False,
             "status": "error",
             "enabled": False,
+            "mode": "PAPER",
             "error": str(exc)
         }), 500
 
 
-# ------------------------------------------------------------
-# PAPER STOP
-# ------------------------------------------------------------
-
 @app.post("/paper/stop")
 def miniapp_paper_stop():
-    global PAPER_TRADING_ENABLED
-    PAPER_TRADING_ENABLED = False
     try:
+        set_paper_enabled(False)
 
-        # اگر paper_trading stop داشته باشد
         try:
             import paper_trading
-
             if hasattr(paper_trading, "stop"):
-                result = paper_trading.stop()
-
-                return jsonify({
-                    "ok": True,
-                    "status": "ok",
-                    "enabled": False,
-                    "mode": "PAPER",
-                    "state": result
-                })
+                paper_trading.stop()
         except Exception as exc:
-            print("paper_trading.stop:", exc)
-
-        # Auto scanner را خاموش کن
-        global AUTO_SCAN_ENABLED
-
-        AUTO_SCAN_ENABLED = False
+            print("PAPER STOP INTERNAL:", exc)
 
         return jsonify({
             "ok": True,
@@ -811,6 +792,7 @@ def miniapp_paper_stop():
             "ok": False,
             "status": "error",
             "enabled": False,
+            "mode": "PAPER",
             "error": str(exc)
         }), 500
 
