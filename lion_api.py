@@ -695,53 +695,31 @@ PAPER_TRADING_ENABLED = False
 @app.get("/paper/status")
 def miniapp_paper_status():
     global PAPER_TRADING_ENABLED
+
     try:
-        # سیستم paper_trading اصلی
+        wallet = {}
+
         try:
             from paper_trading import get_wallet
-
-            wallet = get_wallet()
-
-            enabled = bool(
-                wallet.get("enabled", False)
-                or wallet.get("running", False)
-                or wallet.get("auto_trading", False)
-            )
-
-            return jsonify({
-                "status": "ok",
-                "enabled": enabled,
-                "mode": "PAPER",
-                "wallet": wallet
-            })
-
+            wallet = get_wallet() or {}
         except Exception:
-            pass
-
-        # auto scanner
-        enabled = globals().get(
-            "AUTO_SCAN_ENABLED",
-            False
-        )
+            wallet = {}
 
         return jsonify({
             "status": "ok",
-            "enabled": bool(enabled),
+            "enabled": bool(PAPER_TRADING_ENABLED),
             "mode": "PAPER",
-            "wallet": {}
+            "wallet": wallet
         })
 
     except Exception as exc:
         return jsonify({
             "status": "error",
-            "enabled": False,
+            "enabled": bool(PAPER_TRADING_ENABLED),
+            "mode": "PAPER",
             "error": str(exc)
         }), 500
 
-
-# ------------------------------------------------------------
-# PAPER START
-# ------------------------------------------------------------
 
 @app.post("/paper/start")
 def miniapp_paper_start():
