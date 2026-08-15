@@ -1252,123 +1252,122 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 
-/* ===== LION AI PRO — PAPER BUTTON API ===== */
+/* ===== LION AI PRO — PAPER BUTTON API FINAL ===== */
 
-window.startAutoTrading = async function startAutoTrading(){
-
+async function startAutoTrading() {
     const status = document.getElementById("autoStatus");
     const mode = document.getElementById("autoMode");
 
-    if(status) status.textContent = "● در حال اتصال...";
+    if (status) status.textContent = "⏳ در حال اتصال...";
 
-    try{
-
-        const response = await fetch(
-            API + "/paper/start",
-            {
-                method: "POST"
-            }
-        );
-
-        const data = await response.json();
-
-        if(!data.ok){
-            throw new Error(data.error || "Paper Trading error");
-        }
-
-        if(status)
-            status.textContent = "● در حال اجرا";
-
-        if(mode)
-            mode.textContent = "PAPER • ON";
-
-        console.log("LION PAPER STARTED", data);
-
-    }catch(error){
-
-        console.error("PAPER START ERROR:", error);
-
-        if(status)
-            status.textContent = "● خطا در اتصال";
-    }
-}
-
-
-window.stopAutoTrading = async function stopAutoTrading(){
-
-    const status = document.getElementById("autoStatus");
-    const mode = document.getElementById("autoMode");
-
-    try{
-
-        const response = await fetch(
-            API + "/paper/stop",
-            {
-                method: "POST"
-            }
-        );
+    try {
+        const response = await fetch(API + "/paper/start?t=" + Date.now(), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            cache: "no-store"
+        });
 
         const data = await response.json();
 
-        if(!data.ok){
-            throw new Error(data.error || "Paper Trading error");
+        console.log("🦁 PAPER START:", response.status, data);
+
+        if (!response.ok || data.ok === false) {
+            throw new Error(data.error || data.message || "Paper Trading error");
         }
 
-        if(status)
-            status.textContent = "● متوقف";
+        if (status) status.textContent = "🟢 در حال اجرا";
+        if (mode) mode.textContent = "PAPER • ON";
 
-        if(mode)
+        /*
+         * عمداً اینجا loadPaperStatus را صدا نمی‌زنیم.
+         * چون API ممکن است enabled را در worker جداگانه مدیریت کند
+         * و بلافاصله وضعیت قبلی را برگرداند.
+         */
+
+    } catch (error) {
+        console.error("🦁 PAPER START ERROR:", error);
+
+        if (status) {
+            status.textContent = "🔴 خطا در اتصال";
+        }
+
+        if (mode) {
             mode.textContent = "PAPER • OFF";
-
-        console.log("LION PAPER STOPPED", data);
-
-    }catch(error){
-
-        console.error("PAPER STOP ERROR:", error);
-
-        if(status)
-            status.textContent = "● خطا در اتصال";
+        }
     }
 }
 
 
-async function loadPaperStatus(){
+async function stopAutoTrading() {
+    const status = document.getElementById("autoStatus");
+    const mode = document.getElementById("autoMode");
 
-    try{
+    if (status) status.textContent = "⏳ در حال توقف...";
 
+    try {
+        const response = await fetch(API + "/paper/stop?t=" + Date.now(), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            cache: "no-store"
+        });
+
+        const data = await response.json();
+
+        console.log("🦁 PAPER STOP:", response.status, data);
+
+        if (!response.ok || data.ok === false) {
+            throw new Error(data.error || data.message || "Paper Trading error");
+        }
+
+        if (status) status.textContent = "⚪ متوقف";
+        if (mode) mode.textContent = "PAPER • OFF";
+
+    } catch (error) {
+        console.error("🦁 PAPER STOP ERROR:", error);
+
+        if (status) {
+            status.textContent = "🔴 خطا در اتصال";
+        }
+    }
+}
+
+
+async function loadPaperStatus() {
+    try {
         const response = await fetch(
-            API + "/paper/status"
+            API + "/paper/status?t=" + Date.now(),
+            {
+                method: "GET",
+                cache: "no-store"
+            }
         );
 
         const data = await response.json();
+
+        console.log("🦁 PAPER STATUS:", response.status, data);
 
         const status = document.getElementById("autoStatus");
         const mode = document.getElementById("autoMode");
         const market = document.getElementById("autoMarket");
 
-        if(market)
+        if (market && typeof selectedSymbol !== "undefined") {
             market.textContent = selectedSymbol;
-
-        if(data.enabled){
-
-            if(status)
-                status.textContent = "● در حال اجرا";
-
-            if(mode)
-                mode.textContent = "PAPER • ON";
-
-        }else{
-
-            if(status)
-                status.textContent = "● آماده";
-
-            if(mode)
-                mode.textContent = "PAPER • OFF";
         }
 
-    }catch(error){
+        if (data.enabled === true) {
+            if (status) status.textContent = "🟢 در حال اجرا";
+            if (mode) mode.textContent = "PAPER • ON";
+        } else {
+            if (status) status.textContent = "⚪ آماده";
+            if (mode) mode.textContent = "PAPER • OFF";
+        }
 
-        console.error("PAPER STATUS ERROR:", error);
+    } catch (error) {
+        console.error("🦁 PAPER STATUS ERROR:", error);
     }
 }
 
@@ -1376,13 +1375,6 @@ async function loadPaperStatus(){
 window.startAutoTrading = startAutoTrading;
 window.stopAutoTrading = stopAutoTrading;
 window.loadPaperStatus = loadPaperStatus;
-
-
-document.addEventListener("DOMContentLoaded", function(){
-
-    setTimeout(loadPaperStatus, 500);
-
-});
 
 /* ============================================================
    🦁 LION AI PRO — AUTO PAPER BUTTON FIX V2
