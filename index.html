@@ -2022,7 +2022,7 @@ content:"";position:absolute;left:28%;right:28%;bottom:4px;height:2px;border-rad
 
 <div class="card">
 <div class="muted">بازار فعال</div>
-<div id="selectedMarket" class="title">EUR/USD</div><div class="auto-trade" id="autoTradingPanel"><div class="auto-head"><div class="auto-title">🤖 AUTO TRADING</div><div class="auto-status" id="autoStatus">● آماده</div></div><div class="auto-grid"><div class="auto-box"><span>بازار</span><strong id="autoMarket">EUR/USD</strong></div><div class="auto-box"><span>حالت</span><strong id="autoMode">PAPER</strong></div><div class="auto-box"><span>ریسک</span><strong id="autoRisk">1%</strong></div><div class="auto-box"><span>حداقل اطمینان</span><strong id="autoConfidence">70%</strong></div></div><div class="auto-actions"><button type="button" class="auto-start" onclick="startAutoTrading()">▶ شروع خودکار</button><button type="button" class="auto-stop" onclick="stopAutoTrading()">■ توقف</button></div></div>
+<div id="selectedMarket" class="title">EUR/USD</div><div class="auto-trade" id="autoTradingPanel"><div class="auto-head"><div class="auto-title">🤖 AUTO TRADING</div><div class="auto-status" id="autoStatus">● آماده</div></div><div class="auto-grid"><div class="auto-box"><span>بازار</span><strong id="autoMarket">EUR/USD</strong></div><div class="auto-box"><span>حالت</span><strong id="autoMode">PAPER</strong></div><div class="auto-box"><span>ریسک</span><strong id="autoRisk">1%</strong></div><div class="auto-box"><span>حداقل اطمینان</span><strong id="autoConfidence">70%</strong></div></div><div class="auto-actions"><button type="button" class="auto-start" onclick="lionStartPaper(event)">▶ شروع خودکار</button><button type="button" class="auto-stop" onclick="lionStopPaper(event)">■ توقف</button></div></div>
 </div>
 
 </section>
@@ -2136,5 +2136,292 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-<script>document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".nav-inner button").forEach(function(b){b.onclick=function(e){e.preventDefault();var id={"nav-dashboard":"dashboard","nav-analysis":"analysisPage","nav-markets":"markets","nav-history":"history","nav-settings":"settings"}[b.id];if(!id)return;document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");p.style.display="none"});var t=document.getElementById(id);if(t){t.classList.add("active");t.style.display="block"}document.querySelectorAll(".nav-inner button").forEach(function(x){x.classList.remove("active")});b.classList.add("active");window.scrollTo(0,0)}});console.log("LION NAV READY")});</script></body>
+<script>document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".nav-inner button").forEach(function(b){b.onclick=function(e){e.preventDefault();var id={"nav-dashboard":"dashboard","nav-analysis":"analysisPage","nav-markets":"markets","nav-history":"history","nav-settings":"settings"}[b.id];if(!id)return;document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");p.style.display="none"});var t=document.getElementById(id);if(t){t.classList.add("active");t.style.display="block"}document.querySelectorAll(".nav-inner button").forEach(function(x){x.classList.remove("active")});b.classList.add("active");window.scrollTo(0,0)}});console.log("LION NAV READY")});</script>
+<!-- LION PAPER DIRECT BUTTON FINAL -->
+<script>
+(function () {
+
+    const LION_API =
+        "https://lionminiapp-production.up.railway.app";
+
+    console.log("🦁 LION PAPER DIRECT BUTTON FINAL LOADED");
+
+    window.lionStartPaper = async function (event) {
+
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        const status = document.getElementById("autoStatus");
+        const mode = document.getElementById("autoMode");
+
+        if (status) {
+            status.textContent = "⏳ در حال اتصال...";
+        }
+
+        try {
+
+            console.log("🦁 START PAPER REQUEST");
+
+            const response = await fetch(
+                LION_API + "/paper/start?t=" + Date.now(),
+                {
+                    method: "POST",
+                    cache: "no-store",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "🦁 START PAPER RESPONSE:",
+                response.status,
+                data
+            );
+
+            if (!response.ok || data.ok !== true) {
+                throw new Error(
+                    data.error ||
+                    data.message ||
+                    "Paper Trading start failed"
+                );
+            }
+
+            if (status) {
+                status.textContent = "🟢 در حال اجرا";
+            }
+
+            if (mode) {
+                mode.textContent = "PAPER • ON";
+            }
+
+            console.log("🦁 PAPER TRADING = ON");
+
+        } catch (error) {
+
+            console.error(
+                "🦁 PAPER START ERROR:",
+                error
+            );
+
+            if (status) {
+                status.textContent = "🔴 خطا در اتصال";
+            }
+
+            if (mode) {
+                mode.textContent = "PAPER • OFF";
+            }
+
+            alert(
+                "خطا در روشن کردن Paper Trading\n\n" +
+                error.message
+            );
+        }
+
+        return false;
+    };
+
+
+    window.lionStopPaper = async function (event) {
+
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        const status = document.getElementById("autoStatus");
+        const mode = document.getElementById("autoMode");
+
+        if (status) {
+            status.textContent = "⏳ در حال توقف...";
+        }
+
+        try {
+
+            console.log("🦁 STOP PAPER REQUEST");
+
+            const response = await fetch(
+                LION_API + "/paper/stop?t=" + Date.now(),
+                {
+                    method: "POST",
+                    cache: "no-store",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "🦁 STOP PAPER RESPONSE:",
+                response.status,
+                data
+            );
+
+            if (!response.ok || data.ok !== true) {
+                throw new Error(
+                    data.error ||
+                    data.message ||
+                    "Paper Trading stop failed"
+                );
+            }
+
+            if (status) {
+                status.textContent = "⚪ متوقف";
+            }
+
+            if (mode) {
+                mode.textContent = "PAPER • OFF";
+            }
+
+            console.log("🦁 PAPER TRADING = OFF");
+
+        } catch (error) {
+
+            console.error(
+                "🦁 PAPER STOP ERROR:",
+                error
+            );
+
+            if (status) {
+                status.textContent = "🔴 خطا در اتصال";
+            }
+
+            alert(
+                "خطا در متوقف کردن Paper Trading\n\n" +
+                error.message
+            );
+        }
+
+        return false;
+    };
+
+
+    // وضعیت فعلی هنگام باز شدن Mini App
+    window.lionLoadPaperStatus = async function () {
+
+        try {
+
+            const response = await fetch(
+                LION_API +
+                "/paper/status?t=" +
+                Date.now(),
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "🦁 PAPER STATUS:",
+                response.status,
+                data
+            );
+
+            const status =
+                document.getElementById("autoStatus");
+
+            const mode =
+                document.getElementById("autoMode");
+
+            const market =
+                document.getElementById("autoMarket");
+
+            if (
+                market &&
+                typeof window.selectedSymbol !== "undefined"
+            ) {
+                market.textContent =
+                    window.selectedSymbol;
+            }
+
+            if (data.enabled === true) {
+
+                if (status) {
+                    status.textContent =
+                        "🟢 در حال اجرا";
+                }
+
+                if (mode) {
+                    mode.textContent =
+                        "PAPER • ON";
+                }
+
+            } else {
+
+                if (status) {
+                    status.textContent =
+                        "⚪ آماده";
+                }
+
+                if (mode) {
+                    mode.textContent =
+                        "PAPER • OFF";
+                }
+            }
+
+        } catch (error) {
+
+            console.error(
+                "🦁 PAPER STATUS ERROR:",
+                error
+            );
+        }
+    };
+
+
+    // وقتی صفحه کامل آماده شد
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            console.log(
+                "🦁 DIRECT PAPER BUTTONS READY"
+            );
+
+            const startButton =
+                document.querySelector(
+                    ".auto-start"
+                );
+
+            const stopButton =
+                document.querySelector(
+                    ".auto-stop"
+                );
+
+            if (startButton) {
+
+                startButton.onclick =
+                    window.lionStartPaper;
+
+                console.log(
+                    "🦁 START BUTTON CONNECTED"
+                );
+            }
+
+            if (stopButton) {
+
+                stopButton.onclick =
+                    window.lionStopPaper;
+
+                console.log(
+                    "🦁 STOP BUTTON CONNECTED"
+                );
+            }
+
+            window.lionLoadPaperStatus();
+
+        });
+
+})();
+</script>
+
+</body>
 </html>
