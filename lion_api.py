@@ -171,7 +171,7 @@ def auto_scanner_status():
     return jsonify({
         "status": "ok",
         "scanner": {
-            "enabled": AUTO_SCAN_ENABLED if "AUTO_SCAN_ENABLED" in globals() else False,
+            "enabled": get_paper_enabled(),
             "worker_status": AUTO_SCANNER_STATUS,
             "batch_size": SCAN_BATCH_SIZE,
             "total_markets": len(FOREX_PAIRS),
