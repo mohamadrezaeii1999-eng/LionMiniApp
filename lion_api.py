@@ -489,8 +489,13 @@ def auto_scanner_worker():
 
     global LAST_SCAN_SYMBOL, LAST_SCAN_TIME, AUTO_SCANNER_STATUS
 
-    while AUTO_SCAN_ENABLED:
+    while True:
         try:
+            # فقط کنترل داخل Mini App
+            if not get_paper_enabled():
+                AUTO_SCANNER_STATUS = "disabled"
+                time.sleep(5)
+                continue
             with app.test_request_context():
                 scan_response = scan()
                 scan_data = scan_response.get_json() or {}
