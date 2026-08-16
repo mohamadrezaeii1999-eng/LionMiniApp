@@ -149,7 +149,6 @@ async function loadSignal() {
         const dotEl = document.getElementById("systemDot");
 
         const data = await response.json();
-        const data = await response.json();
 
         console.log("🦁 Lion AI:", selectedSymbol, data);
 
