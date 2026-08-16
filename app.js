@@ -1255,12 +1255,14 @@ document.addEventListener("DOMContentLoaded", function(){
 
 /* ============================================================
    🦁 LION AI PRO — PAPER TRADING — SINGLE CONTROLLER
+   Mini App Live Auto Trading Controller
    ============================================================ */
-
 (function () {
 
     const LION_PAPER_API =
         "https://lionminiapp-production.up.railway.app";
+
+    let paperPollingStarted = false;
 
     function paperStatus(text) {
         const el = document.getElementById("autoStatus");
@@ -1272,6 +1274,22 @@ document.addEventListener("DOMContentLoaded", function(){
         if (el) el.textContent = text;
     }
 
+    function paperMarket(text) {
+        const el = document.getElementById("autoMarket");
+        if (el && text) el.textContent = text;
+    }
+
+    function paperConfidence(value) {
+        const el = document.getElementById("autoConfidence");
+        if (!el) return;
+
+        const n = Number(value);
+
+        if (Number.isFinite(n)) {
+            el.textContent = Math.round(n) + "%";
+        }
+    }
+
     window.lionStartPaper = async function (event) {
 
         if (event) {
@@ -1280,7 +1298,6 @@ document.addEventListener("DOMContentLoaded", function(){
         }
 
         paperStatus("⏳ در حال اجرا...");
-        paperMode("PAPER • ON");
 
         try {
 
@@ -1297,11 +1314,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
             const data = await response.json();
 
-            console.log(
-                "🦁 PAPER START:",
-                response.status,
-                data
-            );
+            console.log("🦁 PAPER START:", response.status, data);
 
             if (!response.ok || data.ok !== true) {
                 throw new Error(
@@ -1314,12 +1327,11 @@ document.addEventListener("DOMContentLoaded", function(){
             paperStatus("🟢 در حال اجرا");
             paperMode("PAPER • ON");
 
+            await window.lionLoadPaperStatus();
+
         } catch (error) {
 
-            console.error(
-                "🦁 PAPER START ERROR:",
-                error
-            );
+            console.error("🦁 PAPER START ERROR:", error);
 
             paperStatus("🔴 خطا");
             paperMode("PAPER • OFF");
@@ -1353,11 +1365,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
             const data = await response.json();
 
-            console.log(
-                "🦁 PAPER STOP:",
-                response.status,
-                data
-            );
+            console.log("🦁 PAPER STOP:", response.status, data);
 
             if (!response.ok || data.ok !== true) {
                 throw new Error(
@@ -1370,12 +1378,11 @@ document.addEventListener("DOMContentLoaded", function(){
             paperStatus("⚪ متوقف");
             paperMode("PAPER • OFF");
 
+            await window.lionLoadPaperStatus();
+
         } catch (error) {
 
-            console.error(
-                "🦁 PAPER STOP ERROR:",
-                error
-            );
+            console.error("🦁 PAPER STOP ERROR:", error);
 
             paperStatus("🔴 خطا");
         }
@@ -1400,18 +1407,24 @@ document.addEventListener("DOMContentLoaded", function(){
 
             const data = await response.json();
 
-            console.log(
-                "🦁 PAPER STATUS:",
-                response.status,
-                data
-            );
+            console.log("🦁 PAPER STATUS:", response.status, data);
 
             if (data.enabled === true) {
+
                 paperStatus("🟢 در حال اجرا");
                 paperMode("PAPER • ON");
+
             } else {
+
                 paperStatus("⚪ آماده");
                 paperMode("PAPER • OFF");
+            }
+
+            if (data.wallet) {
+                console.log(
+                    "🦁 PAPER WALLET:",
+                    data.wallet
+                );
             }
 
         } catch (error) {
@@ -1420,9 +1433,172 @@ document.addEventListener("DOMContentLoaded", function(){
                 "🦁 PAPER STATUS ERROR:",
                 error
             );
-
         }
     };
 
-})();
 
+    window.lionLoadAutoStatus = async function () {
+
+        try {
+
+            const response = await fetch(
+                LION_PAPER_API +
+                "/paper/auto/status?t=" +
+                Date.now(),
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "🦁 AUTO STATUS:",
+                response.status,
+                data
+            );
+
+            const scanner = data.scanner || {};
+
+            /*
+             * اگر Paper خاموش باشد،
+             * پنل هم خاموش نشان داده می‌شود.
+             */
+            if (scanner.enabled === false) {
+
+                paperMode("PAPER • OFF");
+
+                if (scanner.worker_status === "disabled") {
+                    paperStatus("⚪ آماده");
+                }
+
+                return;
+            }
+
+            /*
+             * Worker روشن است.
+             */
+            if (
+                scanner.worker_status === "running" ||
+                scanner.enabled === true
+            ) {
+                paperMode("PAPER • ON");
+            }
+
+            /*
+             * بهترین فرصت معتبر را پیدا می‌کنیم.
+             */
+            const results = Array.isArray(data.results)
+                ? data.results
+                : [];
+
+            const opportunities = results
+                .filter(function (x) {
+                    return (
+                        x &&
+                        (
+                            x.signal === "BUY" ||
+                            x.signal === "SELL"
+                        )
+                    );
+                })
+                .sort(function (a, b) {
+
+                    const sa =
+                        Math.abs(Number(a.score || 0));
+
+                    const sb =
+                        Math.abs(Number(b.score || 0));
+
+                    if (sb !== sa) {
+                        return sb - sa;
+                    }
+
+                    return (
+                        Number(b.confidence || 0) -
+                        Number(a.confidence || 0)
+                    );
+                });
+
+            if (opportunities.length > 0) {
+
+                const best = opportunities[0];
+
+                if (best.symbol) {
+                    paperMarket(best.symbol);
+                }
+
+                if (best.confidence !== undefined) {
+                    paperConfidence(best.confidence);
+                }
+
+                paperStatus(
+                    best.signal === "BUY"
+                        ? "🟢 BUY • خودکار"
+                        : "🔴 SELL • خودکار"
+                );
+
+            } else {
+
+                paperStatus("🟢 فعال • منتظر فرصت");
+            }
+
+        } catch (error) {
+
+            console.error(
+                "🦁 AUTO STATUS ERROR:",
+                error
+            );
+        }
+    };
+
+
+    async function lionRefreshAutoPanel() {
+
+        await window.lionLoadPaperStatus();
+        await window.lionLoadAutoStatus();
+    }
+
+
+    function startPaperPolling() {
+
+        if (paperPollingStarted) {
+            return;
+        }
+
+        paperPollingStarted = true;
+
+        /*
+         * اولین بار بلافاصله اجرا شود.
+         */
+        lionRefreshAutoPanel();
+
+        /*
+         * هر 5 ثانیه وضعیت Mini App
+         * از Railway خوانده می‌شود.
+         */
+        setInterval(
+            lionRefreshAutoPanel,
+            5000
+        );
+    }
+
+
+    /*
+     * وقتی صفحه کامل آماده شد، Polling شروع می‌شود.
+     */
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            startPaperPolling,
+            { once: true }
+        );
+
+    } else {
+
+        startPaperPolling();
+    }
+
+})();
