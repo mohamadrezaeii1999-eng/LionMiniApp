@@ -1,4 +1,4 @@
-const API = "https://lionminiapp-production.up.railway.app";
+const API = "https://lionminiapp-production-a934.up.railway.app";
 
 let selectedSymbol = "EUR/USD";
 let lastData = null;
@@ -1260,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", function(){
 (function () {
 
     const LION_PAPER_API =
-        "https://lionminiapp-production.up.railway.app";
+        "https://lionminiapp-production-a934.up.railway.app";
 
     let paperPollingStarted = false;
 
