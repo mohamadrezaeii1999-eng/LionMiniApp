@@ -1602,3 +1602,19 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 })();
+
+async function loadCTraderAccount() {
+  try {
+    const r = await fetch(`${API}/ctrader/account`);
+    const j = await r.json();
+    console.log("cTrader:", j);
+    if (j.ok && j.data?.data?.[0]) {
+      const a = j.data.data[0];
+      console.log("cTrader Account:", a.accountNumber, "Balance:", a.balance, a.depositCurrency);
+    }
+  } catch (e) {
+    console.error("cTrader connection error:", e);
+  }
+}
+
+loadCTraderAccount();
