@@ -856,5 +856,50 @@ def miniapp_status():
     })
 
 
+
+# ------------------------------------------------------------
+# cTrader - DEMO ACCOUNT INFO (READ ONLY)
+# ------------------------------------------------------------
+@app.get("/ctrader/account")
+def ctrader_account():
+    import os
+    import requests
+
+    token = os.getenv("CTRADER_ACCESS_TOKEN")
+    account_id = os.getenv("CTRADER_ACCOUNT_ID")
+
+    if not token:
+        return jsonify({
+            "ok": False,
+            "error": "CTRADER_ACCESS_TOKEN is not configured"
+        }), 500
+
+    if not account_id:
+        return jsonify({
+            "ok": False,
+            "error": "CTRADER_ACCOUNT_ID is not configured"
+        }), 500
+
+    try:
+        r = requests.get(
+            "https://api.spotware.com/connect/tradingaccounts",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=15
+        )
+
+        return jsonify({
+            "ok": r.ok,
+            "http_status": r.status_code,
+            "account_id": account_id,
+            "data": r.json()
+        }), r.status_code
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "error": str(exc)
+        }), 500
+
+
 print("🦁 LION AI PRO FULL MINI APP API READY")
 
