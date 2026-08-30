@@ -14,7 +14,7 @@
 
 <div class="card">
 <h2>موجودی کل</h2>
-<p>0 USDT</p>
+<p id="ctrader-balance">در حال دریافت موجودی...</p>
 </div>
 
 <div class="card">
@@ -28,6 +28,26 @@
 </div>
 
 </div>
+
+
+<script>
+fetch("https://lionminiapp-production-a934.up.railway.app/ctrader/account?t=" + Date.now())
+  .then(r => r.json())
+  .then(j => {
+    const a = j?.data?.data?.[0];
+    if (j.ok && a) {
+      document.getElementById("ctrader-balance").textContent =
+        Number(a.balance).toLocaleString() + " " + a.depositCurrency;
+    } else {
+      document.getElementById("ctrader-balance").textContent =
+        "خطا در دریافت موجودی";
+    }
+  })
+  .catch(() => {
+    document.getElementById("ctrader-balance").textContent =
+      "خطا در اتصال به cTrader";
+  });
+</script>
 
 </body>
 </html>
