@@ -883,7 +883,7 @@ def ctrader_account():
     try:
         r = requests.get(
             "https://api.spotware.com/connect/tradingaccounts",
-            headers={"Authorization": f"Bearer {token}"},
+            params={"oauth_token": token},
             timeout=15
         )
 
