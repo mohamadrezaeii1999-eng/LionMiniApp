@@ -1618,30 +1618,3 @@ async function loadCTraderAccount() {
 }
 
 loadCTraderAccount();
-
-
-async function loadCTraderWallet() {
-  try {
-    const r = await fetch(`${API}/ctrader/account?t=${Date.now()}`, {
-      cache: "no-store"
-    });
-    const j = await r.json();
-
-    const a = j?.data?.data?.[0];
-    if (!j.ok || !a) throw new Error("cTrader account unavailable");
-
-    document.getElementById("ctrader-account").textContent =
-      `حساب: ${a.accountNumber} • ${a.accountStatus}`;
-
-    document.getElementById("ctrader-balance").textContent =
-      `${Number(a.balance).toLocaleString()} ${a.depositCurrency}`;
-
-  } catch (e) {
-    console.error("cTrader wallet:", e);
-    document.getElementById("ctrader-account").textContent =
-      "اتصال به حساب cTrader ناموفق";
-    document.getElementById("ctrader-balance").textContent = "—";
-  }
-}
-
-loadCTraderWallet();
