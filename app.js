@@ -1244,7 +1244,7 @@ document.addEventListener("DOMContentLoaded", function(){
                     break;
 
                 case "nav-settings":
-                    showPage("settings", button);
+                    showPage("wallet", button);
                     break;
             }
 
