@@ -2109,7 +2109,7 @@ onclick="showPage('history',this)">
 </button>
 
 <button type="button" id="nav-settings"
-onclick="window.location.href='pages/wallet.html'">
+onclick="showPage('wallet',this); if(typeof loadLionWallet==='function'){loadLionWallet();}">
 💼<br>کیف پول
 </button>
 
@@ -2145,7 +2145,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-<script>document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".nav-inner button").forEach(function(b){b.onclick=function(e){if(b.id==="nav-settings"){e.preventDefault();var w=document.getElementById("wallet");if(w){document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");p.style.display="none"});w.classList.add("active");w.style.display="block";document.querySelectorAll(".nav-inner button").forEach(function(x){x.classList.remove("active")});b.classList.add("active");window.scrollTo(0,0);if(typeof loadLionWallet==="function"){loadLionWallet();}return;}e.preventDefault();var id={"nav-dashboard":"dashboard","nav-analysis":"analysisPage","nav-markets":"markets","nav-history":"history"}[b.id];if(!id)return;document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");p.style.display="none"});var t=document.getElementById(id);if(t){t.classList.add("active");t.style.display="block"}document.querySelectorAll(".nav-inner button").forEach(function(x){x.classList.remove("active")});b.classList.add("active");window.scrollTo(0,0)}});console.log("LION NAV READY")});</script>
+
 
 
 
