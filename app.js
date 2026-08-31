@@ -22,6 +22,7 @@ function showPage(id, button) {
 
         pages.forEach(function(page) {
             page.classList.remove("active");
+            page.style.display = "none";
         });
 
         const target = document.getElementById(id);
@@ -32,8 +33,8 @@ function showPage(id, button) {
         }
 
         target.classList.add("active");
+        target.style.display = "block";
 
-        /* منوی واقعی پایین صفحه */
         document.querySelectorAll(".nav-inner button").forEach(function(btn) {
             btn.classList.remove("active");
         });
@@ -42,16 +43,19 @@ function showPage(id, button) {
             button.classList.add("active");
         }
 
-        /* تحلیل */
         if (id === "analysisPage" && typeof loadRealChart === "function") {
             setTimeout(loadRealChart, 100);
         }
 
-        /* بازارها */
         if (id === "markets" && typeof loadMarkets === "function") {
             setTimeout(loadMarkets, 100);
         }
 
+        if (id === "wallet" && typeof loadLionWallet === "function") {
+            setTimeout(loadLionWallet, 100);
+        }
+
+        window.scrollTo(0, 0);
         return false;
     } catch (error) {
         console.error("SHOW PAGE ERROR:", error);
