@@ -2150,30 +2150,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <script>
-async function loadLionWallet() {
-    try {
-        const r = await fetch(
-            "https://lionminiapp-production-a934.up.railway.app/ctrader/account?t=" + Date.now(),
-            {cache: "no-store"}
-        );
-        const j = await r.json();
-        const a = j?.data?.data?.[0];
-
-        if (!j.ok || !a) throw new Error("account");
-
-        document.getElementById("lionWalletBalance").textContent =
-            Number(a.balance).toLocaleString() + " " + a.depositCurrency;
-
-        document.getElementById("lionWalletInfo").textContent =
-            "حساب cTrader: " + a.accountNumber + " • " +
-            (a.accountStatus || "ACTIVE");
-    } catch (e) {
-        document.getElementById("lionWalletBalance").textContent =
-            "خطا در دریافت موجودی";
-        document.getElementById("lionWalletInfo").textContent =
-            "اتصال به cTrader برقرار نشد";
-    }
-}
 </script>
 
 </body>

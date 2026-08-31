@@ -1622,3 +1622,38 @@ async function loadCTraderAccount() {
 }
 
 loadCTraderAccount();
+
+async function loadLionWallet() {
+    const balance = document.getElementById("lionWalletBalance");
+    const info = document.getElementById("lionWalletInfo");
+
+    if (!balance || !info) return;
+
+    balance.textContent = "در حال دریافت...";
+    info.textContent = "در حال اتصال به cTrader...";
+
+    try {
+        const response = await fetch(
+            "https://lionminiapp-production-a934.up.railway.app/ctrader/account?t=" + Date.now(),
+            { cache: "no-store" }
+        );
+
+        const result = await response.json();
+        const account = result?.data?.data?.[0];
+
+        if (!result.ok || !account) throw new Error("cTrader account not found");
+
+        balance.textContent =
+            Number(account.balance).toLocaleString("fa-IR") +
+            " " + account.depositCurrency;
+
+        info.textContent =
+            "حساب cTrader: " + account.accountNumber +
+            " • وضعیت: " + (account.accountStatus || "ACTIVE");
+
+    } catch (error) {
+        console.error("Lion Wallet:", error);
+        balance.textContent = "خطا در دریافت موجودی";
+        info.textContent = "اتصال به cTrader برقرار نشد";
+    }
+}
