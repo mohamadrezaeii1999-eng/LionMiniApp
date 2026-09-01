@@ -901,5 +901,22 @@ def ctrader_account():
         }), 500
 
 
+
+@app.get("/ctrader/sdk-test")
+def ctrader_sdk_test():
+    try:
+        import ctrader_open_api
+        return jsonify({
+            "ok": True,
+            "sdk": "ctrader-open-api",
+            "message": "CTRADER SDK OK"
+        })
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "sdk": "ctrader-open-api",
+            "error": str(exc)
+        }), 500
+
 print("🦁 LION AI PRO FULL MINI APP API READY")
 
