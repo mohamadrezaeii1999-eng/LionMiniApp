@@ -1032,3 +1032,128 @@ def ctrader_trade_test():
             "error": str(exc)
         }), 500
 
+
+# ------------------------------------------------------------
+# cTrader - EUR/USD SYMBOL LOOKUP
+# NO ORDER IS SENT
+# ------------------------------------------------------------
+
+@app.get("/ctrader/symbol-lookup")
+def ctrader_symbol_lookup():
+    import os
+    import threading
+
+    token = os.getenv("CTRADER_ACCESS_TOKEN")
+    account_id = os.getenv("CTRADER_ACCOUNT_ID")
+    client_id = os.getenv("CTRADER_CLIENT_ID")
+    client_secret = os.getenv("CTRADER_CLIENT_SECRET")
+
+    if not all([token, account_id, client_id, client_secret]):
+        return jsonify({
+            "ok": False,
+            "symbol_lookup": False,
+            "error": "cTrader credentials are incomplete"
+        }), 400
+
+    try:
+        from ctrader_open_api import Client, TcpProtocol, Protobuf
+        import ctrader_open_api.messages.OpenApiMessages_pb2 as OA
+
+        client = Client(
+            "demo.ctraderapi.com",
+            5035,
+            TcpProtocol
+        )
+
+        result = {
+            "ok": False,
+            "symbol_lookup": False,
+            "environment": "demo",
+            "account_id": account_id,
+            "symbols": []
+        }
+
+        done = threading.Event()
+
+        def on_symbols(client_obj, message):
+            try:
+                response = Protobuf.extract(message)
+
+                for symbol in response.symbol:
+                    name = getattr(symbol, "symbolName", "")
+
+                    if "EUR/USD" in name.upper().replace(" ", ""):
+                        result["symbols"].append({
+                            "symbol_id": int(symbol.symbolId),
+                            "symbol_name": name,
+                            "enabled": bool(getattr(symbol, "enabled", False))
+                        })
+
+                result["ok"] = True
+                result["symbol_lookup"] = True
+                result["message"] = "EUR/USD lookup completed. NO ORDER SENT."
+
+            except Exception as exc:
+                result["error"] = str(exc)
+
+            finally:
+                done.set()
+
+        def on_error(client_obj, error):
+            result["error"] = str(error)
+            done.set()
+
+        client.setConnectedCallback(lambda c: None)
+
+        client.connect()
+
+        # Application authentication
+        app_req = OA.ProtoOAApplicationAuthReq()
+        app_req.clientId = client_id
+        app_req.clientSecret = client_secret
+
+        d1 = client.send(app_req)
+        d1.addCallback(
+            lambda msg: account_auth()
+        )
+        d1.addErrback(on_error)
+
+        def account_auth():
+            req = OA.ProtoOAAccountAuthReq()
+            req.ctidTraderAccountId = int(account_id)
+            req.accessToken = token
+
+            d2 = client.send(req)
+            d2.addCallback(
+                lambda msg: get_symbols()
+            )
+            d2.addErrback(on_error)
+
+        def get_symbols():
+            req = OA.ProtoOASymbolsListReq()
+            req.ctidTraderAccountId = int(account_id)
+
+            d3 = client.send(req)
+            d3.addCallback(on_symbols)
+            d3.addErrback(on_error)
+
+        done.wait(12)
+
+        try:
+            client.disconnect()
+        except Exception:
+            pass
+
+        if not result["ok"]:
+            return jsonify(result), 500
+
+        return jsonify(result), 200
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "symbol_lookup": False,
+            "environment": "demo",
+            "error": str(exc)
+        }), 500
+
