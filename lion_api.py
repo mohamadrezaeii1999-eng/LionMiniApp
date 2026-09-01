@@ -985,3 +985,50 @@ def ctrader_trading_ready():
         "message": "cTrader credentials are configured"
     }), 200
 
+
+# ------------------------------------------------------------
+# cTrader - DEMO TRADE TEST
+# ------------------------------------------------------------
+
+@app.get("/ctrader/trade-test")
+def ctrader_trade_test():
+    import os
+
+    token = os.getenv("CTRADER_ACCESS_TOKEN")
+    account_id = os.getenv("CTRADER_ACCOUNT_ID")
+    client_id = os.getenv("CTRADER_CLIENT_ID")
+    client_secret = os.getenv("CTRADER_CLIENT_SECRET")
+
+    if not all([token, account_id, client_id, client_secret]):
+        return jsonify({
+            "ok": False,
+            "trade_test": False,
+            "error": "cTrader credentials are incomplete"
+        }), 400
+
+    try:
+        from ctrader_open_api import Client, TcpProtocol
+
+        client = Client(
+            "demo.ctraderapi.com",
+            5035,
+            TcpProtocol
+        )
+
+        return jsonify({
+            "ok": True,
+            "trade_test": True,
+            "environment": "demo",
+            "account_id": account_id,
+            "connection": "SDK initialized",
+            "endpoint": "demo.ctraderapi.com:5035",
+            "message": "Ready for symbol lookup. NO ORDER SENT."
+        }), 200
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "trade_test": False,
+            "error": str(exc)
+        }), 500
+
