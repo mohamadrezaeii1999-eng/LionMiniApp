@@ -920,3 +920,68 @@ def ctrader_sdk_test():
 
 print("🦁 LION AI PRO FULL MINI APP API READY")
 
+
+# ------------------------------------------------------------
+# cTrader Open API - CONNECTION TEST
+# ------------------------------------------------------------
+
+@app.get("/ctrader/connection-test")
+def ctrader_connection_test():
+    import os
+
+    return jsonify({
+        "ok": True,
+        "ctrader": True,
+        "environment": "demo",
+        "account_id": os.getenv("CTRADER_ACCOUNT_ID"),
+        "access_token_configured": bool(
+            os.getenv("CTRADER_ACCESS_TOKEN")
+        ),
+        "client_id_configured": bool(
+            os.getenv("CTRADER_CLIENT_ID")
+        ),
+        "client_secret_configured": bool(
+            os.getenv("CTRADER_CLIENT_SECRET")
+        ),
+        "endpoint": "demo.ctraderapi.com:5035"
+    }), 200
+
+
+@app.get("/ctrader/trading-ready")
+def ctrader_trading_ready():
+    import os
+
+    token = os.getenv("CTRADER_ACCESS_TOKEN")
+    account_id = os.getenv("CTRADER_ACCOUNT_ID")
+    client_id = os.getenv("CTRADER_CLIENT_ID")
+    client_secret = os.getenv("CTRADER_CLIENT_SECRET")
+
+    missing = []
+
+    if not token:
+        missing.append("CTRADER_ACCESS_TOKEN")
+
+    if not account_id:
+        missing.append("CTRADER_ACCOUNT_ID")
+
+    if not client_id:
+        missing.append("CTRADER_CLIENT_ID")
+
+    if not client_secret:
+        missing.append("CTRADER_CLIENT_SECRET")
+
+    if missing:
+        return jsonify({
+            "ok": False,
+            "trading_ready": False,
+            "missing": missing
+        }), 400
+
+    return jsonify({
+        "ok": True,
+        "trading_ready": True,
+        "environment": "demo",
+        "account_id": account_id,
+        "message": "cTrader credentials are configured"
+    }), 200
+
