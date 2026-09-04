@@ -1174,6 +1174,15 @@ def miniapp_paper_reset():
 # MINI APP HEALTH
 # ------------------------------------------------------------
 
+@app.get("/telegram/status")
+def telegram_status():
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    return jsonify({
+        "telegram": True,
+        "bot_token": "SET" if token else "NOT_SET",
+        "status": "ok"
+    })
+
 @app.get("/miniapp/status")
 def miniapp_status():
     return jsonify({
