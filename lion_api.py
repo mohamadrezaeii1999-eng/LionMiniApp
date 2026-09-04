@@ -1038,10 +1038,11 @@ def ctrader_trade_test():
 # NO ORDER IS SENT
 # ------------------------------------------------------------
 
+
 @app.get("/ctrader/symbol-lookup")
 def ctrader_symbol_lookup():
     import os
-    import threading
+    import time
 
     token = os.getenv("CTRADER_ACCESS_TOKEN")
     account_id = os.getenv("CTRADER_ACCOUNT_ID")
@@ -1059,12 +1060,6 @@ def ctrader_symbol_lookup():
         from ctrader_open_api import Client, TcpProtocol, Protobuf
         import ctrader_open_api.messages.OpenApiMessages_pb2 as OA
 
-        client = Client(
-            "demo.ctraderapi.com",
-            5035,
-            TcpProtocol
-        )
-
         result = {
             "ok": False,
             "symbol_lookup": False,
@@ -1073,7 +1068,14 @@ def ctrader_symbol_lookup():
             "symbols": []
         }
 
-        done = threading.Event()
+        # IMPORTANT:
+        # Python SDK automatically starts the connection
+        # when Client(...) is initialized.
+        client = Client(
+            "demo.ctraderapi.com",
+            5035,
+            TcpProtocol
+        )
 
         def on_symbols(client_obj, message):
             try:
@@ -1082,30 +1084,36 @@ def ctrader_symbol_lookup():
                 for symbol in response.symbol:
                     name = getattr(symbol, "symbolName", "")
 
-                    if "EUR/USD" in name.upper().replace(" ", ""):
+                    clean_name = name.upper().replace(" ", "")
+
+                    if clean_name in ("EUR/USD", "EURUSD"):
                         result["symbols"].append({
                             "symbol_id": int(symbol.symbolId),
                             "symbol_name": name,
-                            "enabled": bool(getattr(symbol, "enabled", False))
+                            "enabled": bool(
+                                getattr(symbol, "enabled", False)
+                            )
                         })
 
                 result["ok"] = True
                 result["symbol_lookup"] = True
-                result["message"] = "EUR/USD lookup completed. NO ORDER SENT."
+                result["message"] = (
+                    "EUR/USD lookup completed. NO ORDER SENT."
+                )
 
             except Exception as exc:
                 result["error"] = str(exc)
 
-            finally:
-                done.set()
-
         def on_error(client_obj, error):
             result["error"] = str(error)
-            done.set()
 
-        client.setConnectedCallback(lambda c: None)
+        client.setConnectedCallback(
+            lambda c: None
+        )
 
-        client.connect()
+        client.setMessageReceivedCallback(
+            on_symbols
+        )
 
         # Application authentication
         app_req = OA.ProtoOAApplicationAuthReq()
@@ -1113,31 +1121,32 @@ def ctrader_symbol_lookup():
         app_req.clientSecret = client_secret
 
         d1 = client.send(app_req)
-        d1.addCallback(
-            lambda msg: account_auth()
-        )
-        d1.addErrback(on_error)
 
-        def account_auth():
-            req = OA.ProtoOAAccountAuthReq()
-            req.ctidTraderAccountId = int(account_id)
-            req.accessToken = token
+        def app_auth_ok(message):
+            account_req = OA.ProtoOAAccountAuthReq()
+            account_req.ctidTraderAccountId = int(account_id)
+            account_req.accessToken = token
 
-            d2 = client.send(req)
-            d2.addCallback(
-                lambda msg: get_symbols()
-            )
+            d2 = client.send(account_req)
+
+            def account_auth_ok(message2):
+                symbols_req = OA.ProtoOASymbolsListReq()
+                symbols_req.ctidTraderAccountId = int(account_id)
+                symbols_req.includeArchivedSymbols = False
+
+                client.send(symbols_req).addErrback(on_error)
+
+            d2.addCallback(account_auth_ok)
             d2.addErrback(on_error)
 
-        def get_symbols():
-            req = OA.ProtoOASymbolsListReq()
-            req.ctidTraderAccountId = int(account_id)
+        d1.addCallback(app_auth_ok)
+        d1.addErrback(on_error)
 
-            d3 = client.send(req)
-            d3.addCallback(on_symbols)
-            d3.addErrback(on_error)
+        # Allow asynchronous callbacks to execute.
+        deadline = time.time() + 10
 
-        done.wait(12)
+        while time.time() < deadline and not result["ok"] and "error" not in result:
+            time.sleep(0.1)
 
         try:
             client.disconnect()
@@ -1156,4 +1165,3 @@ def ctrader_symbol_lookup():
             "environment": "demo",
             "error": str(exc)
         }), 500
-
