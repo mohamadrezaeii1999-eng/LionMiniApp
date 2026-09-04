@@ -1208,3 +1208,22 @@ def ctrader_symbol_lookup():
             "environment": "demo",
             "error": str(exc)
         }), 500
+
+@app.get("/ctrader/connect")
+def ctrader_connect():
+    client_id = os.getenv("CTRADER_CLIENT_ID")
+
+    if not client_id:
+        return {"ok": False, "error": "CTRADER_CLIENT_ID is missing"}, 500
+
+    redirect_uri = "https://lionminiapp-production-up.railway.app/ctrader/callback"
+
+    oauth_url = (
+        "https://id.ctrader.com/my/settings/openapi/authorize"
+        "?client_id=" + client_id +
+        "&redirect_uri=" + redirect_uri +
+        "&scope=trading"
+        "&response_type=code"
+    )
+
+    return redirect(oauth_url)
