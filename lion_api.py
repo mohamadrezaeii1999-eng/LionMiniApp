@@ -1216,7 +1216,7 @@ def ctrader_connect():
     if not client_id:
         return {"ok": False, "error": "CTRADER_CLIENT_ID is missing"}, 500
 
-    redirect_uri = "https://lionminiapp-production-up.railway.app/ctrader/callback"
+    redirect_uri = "https://lionminiapp-production-a934.up.railway.app/ctrader/callback"
 
     oauth_url = (
         "https://id.ctrader.com/my/settings/openapi/grantingaccess/"
