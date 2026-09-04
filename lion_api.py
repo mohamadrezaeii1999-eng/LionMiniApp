@@ -866,7 +866,7 @@ def ctrader_account():
     import requests
 
     token = os.getenv("CTRADER_ACCESS_TOKEN")
-    account_id = os.getenv("CTRADER_ACCOUNT_ID")
+    account_id = "48501253"
 
     if not token:
         return jsonify({
@@ -952,7 +952,7 @@ def ctrader_trading_ready():
     import os
 
     token = os.getenv("CTRADER_ACCESS_TOKEN")
-    account_id = os.getenv("CTRADER_ACCOUNT_ID")
+    account_id = "48501253"
     client_id = os.getenv("CTRADER_CLIENT_ID")
     client_secret = os.getenv("CTRADER_CLIENT_SECRET")
 
@@ -995,7 +995,7 @@ def ctrader_trade_test():
     import os
 
     token = os.getenv("CTRADER_ACCESS_TOKEN")
-    account_id = os.getenv("CTRADER_ACCOUNT_ID")
+    account_id = "48501253"
     client_id = os.getenv("CTRADER_CLIENT_ID")
     client_secret = os.getenv("CTRADER_CLIENT_SECRET")
 
@@ -1046,7 +1046,7 @@ def ctrader_symbol_lookup():
     import threading
 
     token = os.getenv("CTRADER_ACCESS_TOKEN")
-    account_id = os.getenv("CTRADER_ACCOUNT_ID")
+    account_id = "48501253"
     client_id = os.getenv("CTRADER_CLIENT_ID")
     client_secret = os.getenv("CTRADER_CLIENT_SECRET")
 
