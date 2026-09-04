@@ -1176,6 +1176,7 @@ def ctrader_symbol_lookup():
 
         client.setConnectedCallback(connected)
         client.setMessageReceivedCallback(on_message)
+        client.startService()
 
         client.startService()
 
@@ -1377,6 +1378,7 @@ def ctrader_small_order():
                 result["error"] = str(e)
 
         client.setMessageReceivedCallback(on_message)
+        client.startService()
 
         auth = ProtoOAApplicationAuthReq()
         auth.clientId = client_id
