@@ -1299,14 +1299,14 @@ def ctrader_small_order():
     client_id = os.getenv("CTRADER_CLIENT_ID")
     client_secret = os.getenv("CTRADER_CLIENT_SECRET")
 
-    if not all([token, account_id, client_id, client_secret]):
+    if not all([token, client_id, client_secret]):
         return {
             "ok": False,
             "error": "cTrader credentials are incomplete"
         }, 400
 
     try:
-        from ctrader_open_api import Client, Protobuf, TcpProtocol
+        from ctrader_open_api import Client, TcpProtocol
         from ctrader_open_api.messages.OpenApiMessages_pb2 import (
             ProtoOAApplicationAuthReq,
             ProtoOAApplicationAuthRes,
@@ -1316,6 +1316,7 @@ def ctrader_small_order():
             ProtoOAExecutionEvent,
             ProtoOAOrderErrorEvent
         )
+        import time
 
         client = Client(
             "demo.ctraderapi.com",
@@ -1327,58 +1328,82 @@ def ctrader_small_order():
             "ok": False,
             "account_id": account_id,
             "symbol": "EURUSD",
-            "volume": 1000
+            "volume": 1000,
+            "stage": "starting"
         }
 
         def on_message(payload):
-            if isinstance(payload, ProtoOAApplicationAuthRes):
-                req = ProtoOAAccountAuthReq()
-                req.ctidTraderAccountId = int(account_id)
-                req.accessToken = token
-                client.send(req)
+            try:
+                if isinstance(payload, ProtoOAApplicationAuthRes):
+                    result["stage"] = "application_authenticated"
 
-            elif isinstance(payload, ProtoOAAccountAuthRes):
-                req = ProtoOANewOrderReq()
-                req.ctidTraderAccountId = int(account_id)
-                req.symbolId = 1
-                req.orderType = 1
-                req.tradeSide = 1
-                req.volume = 1000
-                client.send(req)
+                    req = ProtoOAAccountAuthReq()
+                    req.ctidTraderAccountId = int(account_id)
+                    req.accessToken = token
+                    client.send(req)
 
-            elif isinstance(payload, ProtoOAExecutionEvent):
-                if payload.HasField("order"):
-                    result["ok"] = True
-                    result["order_id"] = str(payload.order.orderId)
-                    result["execution_type"] = str(payload.executionType)
-                elif payload.HasField("errorCode"):
+                elif isinstance(payload, ProtoOAAccountAuthRes):
+                    result["stage"] = "account_authenticated"
+
+                    req = ProtoOANewOrderReq()
+                    req.ctidTraderAccountId = int(account_id)
+                    req.symbolId = 1
+                    req.orderType = 1
+                    req.tradeSide = 1
+                    req.volume = 1000
+
+                    result["stage"] = "order_sent"
+                    client.send(req)
+
+                elif isinstance(payload, ProtoOAExecutionEvent):
+                    result["stage"] = "execution_event"
+
+                    if payload.HasField("order"):
+                        result["ok"] = True
+                        result["order_id"] = str(payload.order.orderId)
+
+                    if hasattr(payload, "executionType"):
+                        result["execution_type"] = str(payload.executionType)
+
+                elif isinstance(payload, ProtoOAOrderErrorEvent):
+                    result["stage"] = "order_error"
                     result["error"] = str(payload.errorCode)
 
-            elif isinstance(payload, ProtoOAOrderErrorEvent):
-                result["error"] = str(payload.errorCode)
-                if payload.HasField("description"):
-                    result["description"] = str(payload.description)
+                    if hasattr(payload, "description"):
+                        result["description"] = str(payload.description)
+
+            except Exception as e:
+                result["stage"] = "callback_error"
+                result["error"] = str(e)
 
         client.setMessageReceivedCallback(on_message)
 
         auth = ProtoOAApplicationAuthReq()
         auth.clientId = client_id
         auth.clientSecret = client_secret
+
+        result["stage"] = "auth_sent"
         client.send(auth)
 
-        import time
-        for _ in range(50):
-            if result["ok"]:
+        for _ in range(100):
+            if result["ok"] or "error" in result:
                 break
             time.sleep(0.1)
 
         client.stopService()
+
+        if not result["ok"] and "error" not in result:
+            result["error"] = "No cTrader response received before timeout"
 
         return result
 
     except Exception as e:
         return {
             "ok": False,
+            "account_id": account_id,
+            "symbol": "EURUSD",
+            "volume": 1000,
             "error": str(e)
         }, 500
+
 
