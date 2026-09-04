@@ -1219,11 +1219,11 @@ def ctrader_connect():
     redirect_uri = "https://lionminiapp-production-up.railway.app/ctrader/callback"
 
     oauth_url = (
-        "https://id.ctrader.com/my/settings/openapi/authorize"
+        "https://id.ctrader.com/my/settings/openapi/grantingaccess/"
         "?client_id=" + client_id +
         "&redirect_uri=" + redirect_uri +
-        "&scope=trading"
-        "&response_type=code"
+        "&scope=trading" +
+        "&product=web"
     )
 
     return redirect(oauth_url)
