@@ -474,6 +474,334 @@ def paper_auto():
 
 
 
+
+# ============================================================
+# LION AI V3.7 -> cTrader DEMO AUTO TRADING
+# ============================================================
+
+CTRADER_AI_LAST_TRADE = {}
+
+def ctrader_ai_execute(symbol, signal, entry, stop_loss, take_profit):
+    import os
+    import time
+    import threading
+
+    signal = str(signal).upper().strip()
+    if signal not in ("BUY", "SELL"):
+        return {"ok": True, "action": "WAIT", "message": "AI signal is WAIT"}
+
+    token = os.getenv("CTRADER_ACCESS_TOKEN")
+    client_id = os.getenv("CTRADER_CLIENT_ID")
+    client_secret = os.getenv("CTRADER_CLIENT_SECRET")
+    account_id = os.getenv("CTRADER_ACCOUNT_ID") or "48501253"
+
+    if not all([token, client_id, client_secret, account_id]):
+        return {
+            "ok": False,
+            "action": "ERROR",
+            "message": "cTrader credentials are incomplete"
+        }
+
+    # فقط Demo
+    host = "demo.ctraderapi.com"
+    port = 5035
+
+    # جلوگیری از ارسال تکراری همان سیگنال
+    trade_key = f"{symbol}:{signal}:{round(float(entry), 5)}"
+    now = time.time()
+
+    old = CTRADER_AI_LAST_TRADE.get(trade_key)
+    if old and now - old < 900:
+        return {
+            "ok": True,
+            "action": "SKIP_DUPLICATE",
+            "message": "این سیگنال قبلاً ارسال شده",
+            "symbol": symbol,
+            "signal": signal
+        }
+
+    try:
+        from ctrader_open_api import Client, Protobuf, TcpProtocol
+        from ctrader_open_api.messages.OpenApiMessages_pb2 import (
+            ProtoOAApplicationAuthReq,
+            ProtoOAApplicationAuthRes,
+            ProtoOAAccountAuthReq,
+            ProtoOAAccountAuthRes,
+            ProtoOASymbolsListReq,
+            ProtoOASymbolsListRes,
+            ProtoOANewOrderReq,
+            ProtoOAExecutionEvent,
+            ProtoOAOrderErrorEvent
+        )
+        from twisted.internet import reactor
+
+        result = {
+            "ok": False,
+            "action": "ERROR",
+            "environment": "demo",
+            "account_id": str(account_id),
+            "symbol": symbol,
+            "signal": signal
+        }
+
+        client = Client(host, port, TcpProtocol)
+
+        target_symbol = symbol.upper().replace("/", "").replace("_", "")
+        state = {"symbol_id": None, "sent": False}
+
+        def on_error(failure):
+            result["error"] = str(failure)
+            result["action"] = "ERROR"
+
+        def on_message(client_obj, message):
+            try:
+                payload = Protobuf.extract(message)
+
+                if isinstance(payload, ProtoOAApplicationAuthRes):
+                    req = ProtoOAAccountAuthReq()
+                    req.ctidTraderAccountId = int(account_id)
+                    req.accessToken = token
+                    client_obj.send(req).addErrback(on_error)
+
+                elif isinstance(payload, ProtoOAAccountAuthRes):
+                    req = ProtoOASymbolsListReq()
+                    req.ctidTraderAccountId = int(account_id)
+                    req.includeArchivedSymbols = False
+                    client_obj.send(req).addErrback(on_error)
+
+                elif isinstance(payload, ProtoOASymbolsListRes):
+                    found = None
+
+                    for sym in payload.symbol:
+                        name = getattr(sym, "symbolName", "")
+                        clean = name.upper().replace("/", "").replace("_", "").replace(" ", "")
+                        if clean == target_symbol:
+                            found = sym
+                            break
+
+                    if found is None:
+                        result["error"] = f"Symbol not found: {symbol}"
+                        result["action"] = "ERROR"
+                        return
+
+                    state["symbol_id"] = int(found.symbolId)
+
+                    req = ProtoOANewOrderReq()
+                    req.ctidTraderAccountId = int(account_id)
+                    req.symbolId = state["symbol_id"]
+
+                    # MARKET BUY / SELL
+                    req.orderType = ProtoOANewOrderReq.MARKET
+                    req.tradeSide = (
+                        ProtoOANewOrderReq.BUY
+                        if signal == "BUY"
+                        else ProtoOANewOrderReq.SELL
+                    )
+
+                    # cTrader volume = 0.01 unit
+                    # 100000 = 1000 units = حداقل مجاز حساب فعلی
+                    req.volume = 100000
+
+                    # SL / TP به صورت قیمت مطلق
+                    if float(stop_loss) > 0:
+                        req.stopLoss = float(stop_loss)
+
+                    if float(take_profit) > 0:
+                        req.takeProfit = float(take_profit)
+
+                    state["sent"] = True
+                    client_obj.send(req).addErrback(on_error)
+
+                elif isinstance(payload, ProtoOAExecutionEvent):
+                    result["ok"] = True
+                    result["action"] = "OPEN"
+                    result["message"] = "AI signal sent to cTrader Demo"
+                    result["execution"] = str(payload)
+
+                    CTRADER_AI_LAST_TRADE[trade_key] = time.time()
+
+                    reactor.callFromThread(client_obj.stopService)
+
+                elif isinstance(payload, ProtoOAOrderErrorEvent):
+                    result["ok"] = False
+                    result["action"] = "REJECTED"
+                    result["error"] = getattr(payload, "description", str(payload))
+                    result["error_code"] = getattr(payload, "errorCode", "")
+
+                    reactor.callFromThread(client_obj.stopService)
+
+            except Exception as exc:
+                result["ok"] = False
+                result["action"] = "ERROR"
+                result["error"] = str(exc)
+
+        def connected(client_obj):
+            req = ProtoOAApplicationAuthReq()
+            req.clientId = client_id
+            req.clientSecret = client_secret
+            client_obj.send(req).addErrback(on_error)
+
+        client.setConnectedCallback(connected)
+        client.setMessageReceivedCallback(on_message)
+        client.startService()
+
+        # Reactor فقط یک بار اجرا می‌شود
+        if not reactor.running:
+            threading.Thread(
+                target=reactor.run,
+                kwargs={"installSignalHandlers": False},
+                daemon=True
+            ).start()
+
+        deadline = time.time() + 20
+
+        while time.time() < deadline:
+            if result.get("ok"):
+                break
+            if result.get("action") in ("REJECTED", "ERROR"):
+                break
+            time.sleep(0.1)
+
+        if not result.get("ok") and result.get("action") == "ERROR" and "error" not in result:
+            result["error"] = "No response from cTrader within 20 seconds"
+
+        return result
+
+    except Exception as exc:
+        return {
+            "ok": False,
+            "action": "ERROR",
+            "environment": "demo",
+            "account_id": str(account_id),
+            "symbol": symbol,
+            "signal": signal,
+            "error": str(exc)
+        }
+
+
+def ctrader_ai_auto():
+    """
+    AI V3.7 signal -> cTrader Demo
+    این تابع جای Paper Auto را برای Worker می‌گیرد.
+    """
+
+    try:
+        from lion_engine_v37 import get_data_freshness
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "mode": "ctrader_ai",
+            "action": "ERROR",
+            "message": "AI engine import failed",
+            "error": str(exc)
+        })
+
+    now = time.time()
+
+    opportunities = [
+        x for x in SCAN_RESULTS.values()
+        if x.get("signal") in ("BUY", "SELL")
+        and x.get("price") is not None
+        and x.get("scanned_at") is not None
+        and now - float(x.get("scanned_at", 0)) <= SCAN_RESULT_MAX_AGE
+    ]
+
+    opportunities.sort(
+        key=lambda x: (
+            abs(float(x.get("score", 0))),
+            float(x.get("confidence", 0))
+        ),
+        reverse=True
+    )
+
+    if not opportunities:
+        return jsonify({
+            "status": "ok",
+            "mode": "ctrader_ai",
+            "action": "WAIT",
+            "message": "AI فعلاً فرصت BUY/SELL مناسب پیدا نکرد"
+        })
+
+    best = opportunities[0]
+
+    score = float(best.get("score", 0))
+    confidence = float(best.get("confidence", 0))
+
+    # همان فیلترهای Auto قبلی AI
+    if abs(score) < 45 or confidence < 55:
+        return jsonify({
+            "status": "ok",
+            "mode": "ctrader_ai",
+            "action": "WAIT",
+            "message": "قدرت سیگنال AI کافی نیست",
+            "candidate": best
+        })
+
+    symbol = str(best["symbol"])
+    signal = str(best["signal"]).upper()
+    entry = float(best["price"])
+
+    # Fresh Data Guard
+    try:
+        freshness = get_data_freshness(symbol)
+
+        if not freshness.get("fresh", False):
+            return jsonify({
+                "status": "ok",
+                "mode": "ctrader_ai",
+                "action": "WAIT",
+                "message": "داده بازار تازه نیست",
+                "candidate": best,
+                "freshness": freshness
+            })
+
+    except Exception as exc:
+        return jsonify({
+            "status": "ok",
+            "mode": "ctrader_ai",
+            "action": "WAIT",
+            "message": "Fresh Data Guard فعال نشد",
+            "error": str(exc)
+        })
+
+    # ATR برای SL / TP
+    atr = float(best.get("atr") or entry * 0.0005)
+
+    if signal == "BUY":
+        stop_loss = entry - atr * 1.5
+        take_profit = entry + atr * 2.25
+    else:
+        stop_loss = entry + atr * 1.5
+        take_profit = entry - atr * 2.25
+
+    trade = ctrader_ai_execute(
+        symbol,
+        signal,
+        entry,
+        stop_loss,
+        take_profit
+    )
+
+    return jsonify({
+        "status": "ok" if trade.get("ok") else "error",
+        "mode": "ctrader_ai",
+        "action": trade.get("action"),
+        "symbol": symbol,
+        "signal": signal,
+        "entry": entry,
+        "stop_loss": stop_loss,
+        "take_profit": take_profit,
+        "score": score,
+        "confidence": confidence,
+        "trade": trade
+    })
+
+
+@app.get("/ctrader/ai-auto")
+def ctrader_ai_auto_route():
+    return ctrader_ai_auto()
+
+
 # ============================================================
 # REAL AUTO SCANNER + PAPER TRADING WORKER
 # ============================================================
@@ -544,12 +872,12 @@ def auto_scanner_worker():
 
                 # فقط وقتی نتیجه معتبر داریم Paper Trading اجرا شود
                 if successful > 0:
-                    result = paper_auto()
+                    result = ctrader_ai_auto()
 
                     try:
                         data = result.get_json() or {}
                         print(
-                            "AUTO PAPER:",
+                            "AUTO CTRADER:",
                             data.get("action"),
                             data.get("message", ""),
                             data.get("wallet", {})
