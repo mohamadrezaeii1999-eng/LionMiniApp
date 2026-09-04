@@ -1290,3 +1290,85 @@ def ctrader_connect():
     )
 
     return redirect(oauth_url)
+
+# cTrader - SMALL DEMO ORDER
+@app.get("/ctrader/small-order")
+def ctrader_small_order():
+    token = os.getenv("CTRADER_ACCESS_TOKEN")
+    account_id = "48501253"
+    client_id = os.getenv("CTRADER_CLIENT_ID")
+    client_secret = os.getenv("CTRADER_CLIENT_SECRET")
+
+    if not all([token, account_id, client_id, client_secret]):
+        return {
+            "ok": False,
+            "error": "cTrader credentials are incomplete"
+        }, 400
+
+    try:
+        from ctrader_open_api import Client, Protobuf, TcpProtocol
+        from ctrader_open_api.messages.OpenApiMessages_pb2 import (
+            ProtoOAApplicationAuthReq,
+            ProtoOAApplicationAuthRes,
+            ProtoOAAccountAuthReq,
+            ProtoOAAccountAuthRes,
+            ProtoOANewOrderReq,
+            ProtoOANewOrderRes
+        )
+
+        client = Client(
+            "demo.ctraderapi.com",
+            5035,
+            TcpProtocol
+        )
+
+        result = {
+            "ok": False,
+            "account_id": account_id,
+            "symbol": "EURUSD",
+            "volume": 1000
+        }
+
+        def on_message(payload):
+            if isinstance(payload, ProtoOAApplicationAuthRes):
+                req = ProtoOAAccountAuthReq()
+                req.ctidTraderAccountId = int(account_id)
+                req.accessToken = token
+                client.send(req)
+
+            elif isinstance(payload, ProtoOAAccountAuthRes):
+                req = ProtoOANewOrderReq()
+                req.ctidTraderAccountId = int(account_id)
+                req.symbolId = 1
+                req.orderType = 1
+                req.tradeSide = 1
+                req.volume = 1000
+                client.send(req)
+
+            elif isinstance(payload, ProtoOANewOrderRes):
+                result["ok"] = True
+                result["order_id"] = str(payload.order.orderId)
+
+        client.setMessageReceivedCallback(on_message)
+
+        auth = ProtoOAApplicationAuthReq()
+        auth.clientId = client_id
+        auth.clientSecret = client_secret
+        client.send(auth)
+
+        import time
+        for _ in range(50):
+            if result["ok"]:
+                break
+            time.sleep(0.1)
+
+        client.stopService()
+
+        return result
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e)
+        }, 500
+
