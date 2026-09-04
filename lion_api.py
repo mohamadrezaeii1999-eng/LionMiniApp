@@ -1325,7 +1325,7 @@ def ctrader_small_order():
 
     account_id = 48501253
     symbol_id = 1
-    volume = 1000
+    volume = 100000
 
     result = {
         "ok": False,
