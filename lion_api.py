@@ -1209,6 +1209,30 @@ def ctrader_symbol_lookup():
             "error": str(exc)
         }), 500
 
+@app.get("/ctrader/callback")
+def ctrader_callback():
+    code = request.args.get("code")
+    error = request.args.get("error")
+
+    if error:
+        return jsonify({
+            "ok": False,
+            "error": error
+        }), 400
+
+    if not code:
+        return jsonify({
+            "ok": False,
+            "error": "Authorization code not found"
+        }), 400
+
+    return jsonify({
+        "ok": True,
+        "message": "cTrader authorization code received",
+        "code_received": True
+    })
+
+
 @app.get("/ctrader/connect")
 def ctrader_connect():
     client_id = os.getenv("CTRADER_CLIENT_ID")
