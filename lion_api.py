@@ -1040,6 +1040,51 @@ def ctrader_trade_test():
 
 
 
+
+@app.get("/ctrader/network-test")
+def ctrader_network_test():
+    import socket
+    import ssl
+    import time
+
+    host = "demo.ctraderapi.com"
+    port = 5035
+
+    result = {
+        "ok": False,
+        "host": host,
+        "port": port,
+        "tcp": False,
+        "tls": False
+    }
+
+    sock = None
+
+    try:
+        sock = socket.create_connection((host, port), timeout=10)
+        result["tcp"] = True
+
+        context = ssl.create_default_context()
+
+        tls_sock = context.wrap_socket(sock, server_hostname=host)
+        result["tls"] = True
+        result["message"] = "TCP + TLS connection to cTrader Demo succeeded."
+
+        tls_sock.close()
+        result["ok"] = True
+        return jsonify(result), 200
+
+    except Exception as exc:
+        result["error"] = str(exc)
+        return jsonify(result), 500
+
+    finally:
+        try:
+            if sock:
+                sock.close()
+        except Exception:
+            pass
+
 @app.get("/ctrader/symbol-lookup")
 def ctrader_symbol_lookup():
     import os
