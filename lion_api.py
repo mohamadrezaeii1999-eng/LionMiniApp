@@ -1039,10 +1039,11 @@ def ctrader_trade_test():
 # ------------------------------------------------------------
 
 
+
 @app.get("/ctrader/symbol-lookup")
 def ctrader_symbol_lookup():
     import os
-    import time
+    import threading
 
     token = os.getenv("CTRADER_ACCESS_TOKEN")
     account_id = os.getenv("CTRADER_ACCOUNT_ID")
@@ -1057,8 +1058,16 @@ def ctrader_symbol_lookup():
         }), 400
 
     try:
-        from ctrader_open_api import Client, TcpProtocol, Protobuf
-        import ctrader_open_api.messages.OpenApiMessages_pb2 as OA
+        from ctrader_open_api import Client, Protobuf, TcpProtocol
+        from ctrader_open_api.messages.OpenApiMessages_pb2 import (
+            ProtoOAApplicationAuthReq,
+            ProtoOAApplicationAuthRes,
+            ProtoOAAccountAuthReq,
+            ProtoOAAccountAuthRes,
+            ProtoOASymbolsListReq,
+            ProtoOASymbolsListRes
+        )
+        from twisted.internet import reactor
 
         result = {
             "ok": False,
@@ -1068,92 +1077,81 @@ def ctrader_symbol_lookup():
             "symbols": []
         }
 
-        # IMPORTANT:
-        # Python SDK automatically starts the connection
-        # when Client(...) is initialized.
         client = Client(
             "demo.ctraderapi.com",
             5035,
             TcpProtocol
         )
 
-        def on_symbols(client_obj, message):
+        def on_error(failure):
+            result["error"] = str(failure)
+
+        def on_message(client_obj, message):
             try:
-                response = Protobuf.extract(message)
+                payload = Protobuf.extract(message)
 
-                for symbol in response.symbol:
-                    name = getattr(symbol, "symbolName", "")
+                if isinstance(payload, ProtoOAApplicationAuthRes):
+                    req = ProtoOAAccountAuthReq()
+                    req.ctidTraderAccountId = int(account_id)
+                    req.accessToken = token
+                    client_obj.send(req).addErrback(on_error)
 
-                    clean_name = name.upper().replace(" ", "")
+                elif isinstance(payload, ProtoOAAccountAuthRes):
+                    req = ProtoOASymbolsListReq()
+                    req.ctidTraderAccountId = int(account_id)
+                    req.includeArchivedSymbols = False
+                    client_obj.send(req).addErrback(on_error)
 
-                    if clean_name in ("EUR/USD", "EURUSD"):
-                        result["symbols"].append({
-                            "symbol_id": int(symbol.symbolId),
-                            "symbol_name": name,
-                            "enabled": bool(
-                                getattr(symbol, "enabled", False)
-                            )
-                        })
+                elif isinstance(payload, ProtoOASymbolsListRes):
+                    for symbol in payload.symbol:
+                        name = getattr(symbol, "symbolName", "")
+                        clean = name.upper().replace(" ", "")
 
-                result["ok"] = True
-                result["symbol_lookup"] = True
-                result["message"] = (
-                    "EUR/USD lookup completed. NO ORDER SENT."
-                )
+                        if clean in ("EUR/USD", "EURUSD"):
+                            result["symbols"].append({
+                                "symbol_id": int(symbol.symbolId),
+                                "symbol_name": name
+                            })
+
+                    result["ok"] = True
+                    result["symbol_lookup"] = True
+                    result["message"] = "EUR/USD lookup completed. NO ORDER SENT."
+
+                    reactor.callFromThread(client_obj.stopService)
 
             except Exception as exc:
                 result["error"] = str(exc)
 
-        def on_error(client_obj, error):
-            result["error"] = str(error)
+        def connected(client_obj):
+            req = ProtoOAApplicationAuthReq()
+            req.clientId = client_id
+            req.clientSecret = client_secret
+            client_obj.send(req).addErrback(on_error)
 
-        client.setConnectedCallback(
-            lambda c: None
+        client.setConnectedCallback(connected)
+        client.setMessageReceivedCallback(on_message)
+
+        client.startService()
+
+        thread = threading.Thread(
+            target=reactor.run,
+            kwargs={"installSignalHandlers": False},
+            daemon=True
         )
+        thread.start()
 
-        client.setMessageReceivedCallback(
-            on_symbols
-        )
+        # Wait for result
+        import time
+        deadline = time.time() + 15
 
-        # Application authentication
-        app_req = OA.ProtoOAApplicationAuthReq()
-        app_req.clientId = client_id
-        app_req.clientSecret = client_secret
-
-        d1 = client.send(app_req)
-
-        def app_auth_ok(message):
-            account_req = OA.ProtoOAAccountAuthReq()
-            account_req.ctidTraderAccountId = int(account_id)
-            account_req.accessToken = token
-
-            d2 = client.send(account_req)
-
-            def account_auth_ok(message2):
-                symbols_req = OA.ProtoOASymbolsListReq()
-                symbols_req.ctidTraderAccountId = int(account_id)
-                symbols_req.includeArchivedSymbols = False
-
-                client.send(symbols_req).addErrback(on_error)
-
-            d2.addCallback(account_auth_ok)
-            d2.addErrback(on_error)
-
-        d1.addCallback(app_auth_ok)
-        d1.addErrback(on_error)
-
-        # Allow asynchronous callbacks to execute.
-        deadline = time.time() + 10
-
-        while time.time() < deadline and not result["ok"] and "error" not in result:
+        while time.time() < deadline:
+            if result["ok"] or "error" in result:
+                break
             time.sleep(0.1)
 
-        try:
-            client.disconnect()
-        except Exception:
-            pass
-
         if not result["ok"]:
+            if "error" not in result:
+                result["error"] = "No response from cTrader within 15 seconds"
             return jsonify(result), 500
 
         return jsonify(result), 200
