@@ -1215,10 +1215,7 @@ def ctrader_callback():
     error = request.args.get("error")
 
     if error:
-        return jsonify({
-            "ok": False,
-            "error": error
-        }), 400
+        return jsonify({"ok": False, "error": error}), 400
 
     if not code:
         return jsonify({
@@ -1226,11 +1223,52 @@ def ctrader_callback():
             "error": "Authorization code not found"
         }), 400
 
-    return jsonify({
-        "ok": True,
-        "message": "cTrader authorization code received",
-        "code_received": True
-    })
+    client_id = os.getenv("CTRADER_CLIENT_ID")
+    client_secret = os.getenv("CTRADER_CLIENT_SECRET")
+
+    if not client_id or not client_secret:
+        return jsonify({
+            "ok": False,
+            "error": "cTrader credentials are missing in Railway Variables"
+        }), 500
+
+    redirect_uri = "https://lionminiapp-production-a934.up.railway.app/ctrader/callback"
+
+    try:
+        response = requests.get(
+            "https://openapi.ctrader.com/apps/token",
+            params={
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "client_id": client_id,
+                "client_secret": client_secret
+            },
+            timeout=20
+        )
+
+        data = response.json()
+
+        if not data.get("accessToken"):
+            return jsonify({
+                "ok": False,
+                "error": data.get("errorCode") or "Token exchange failed",
+                "description": data.get("description")
+            }), 400
+
+        return jsonify({
+            "ok": True,
+            "message": "cTrader connected successfully",
+            "token_received": True,
+            "expires_in": data.get("expiresIn"),
+            "refresh_token_received": bool(data.get("refreshToken"))
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "error": str(exc)
+        }), 500
 
 
 @app.get("/ctrader/connect")
