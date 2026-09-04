@@ -1307,7 +1307,7 @@ def ctrader_small_order():
         }, 400
 
     try:
-        from ctrader_open_api import Client, TcpProtocol
+        from ctrader_open_api import Client, Protobuf, TcpProtocol, EndPoints
         from ctrader_open_api.messages.OpenApiMessages_pb2 import (
             ProtoOAApplicationAuthReq,
             ProtoOAApplicationAuthRes,
@@ -1317,13 +1317,8 @@ def ctrader_small_order():
             ProtoOAExecutionEvent,
             ProtoOAOrderErrorEvent
         )
-        import time
-
-        client = Client(
-            "demo.ctraderapi.com",
-            5035,
-            TcpProtocol
-        )
+        from twisted.internet import reactor
+        import threading
 
         result = {
             "ok": False,
@@ -1333,15 +1328,50 @@ def ctrader_small_order():
             "stage": "starting"
         }
 
-        def on_message(payload):
+        client = Client(
+            EndPoints.PROTOBUF_DEMO_HOST,
+            EndPoints.PROTOBUF_PORT,
+            TcpProtocol
+        )
+
+        finished = threading.Event()
+
+        def on_error(failure):
+            result["stage"] = "sdk_error"
+            result["error"] = str(failure)
+            finished.set()
+
+        def connected(client):
+            result["stage"] = "connected"
+
+            auth = ProtoOAApplicationAuthReq()
+            auth.clientId = client_id
+            auth.clientSecret = client_secret
+
+            result["stage"] = "application_auth_sent"
+
+            deferred = client.send(auth)
+            deferred.addErrback(on_error)
+
+        def disconnected(client, reason):
+            if not result["ok"] and "error" not in result:
+                result["stage"] = "disconnected"
+                result["error"] = str(reason)
+            finished.set()
+
+        def on_message(client, message):
             try:
+                payload = Protobuf.extract(message)
+
                 if isinstance(payload, ProtoOAApplicationAuthRes):
                     result["stage"] = "application_authenticated"
 
                     req = ProtoOAAccountAuthReq()
                     req.ctidTraderAccountId = int(account_id)
                     req.accessToken = token
-                    client.send(req)
+
+                    deferred = client.send(req)
+                    deferred.addErrback(on_error)
 
                 elif isinstance(payload, ProtoOAAccountAuthRes):
                     result["stage"] = "account_authenticated"
@@ -1349,12 +1379,18 @@ def ctrader_small_order():
                     req = ProtoOANewOrderReq()
                     req.ctidTraderAccountId = int(account_id)
                     req.symbolId = 1
+
+                    # MARKET BUY
                     req.orderType = 1
                     req.tradeSide = 1
+
+                    # 1000 units
                     req.volume = 1000
 
                     result["stage"] = "order_sent"
-                    client.send(req)
+
+                    deferred = client.send(req)
+                    deferred.addErrback(on_error)
 
                 elif isinstance(payload, ProtoOAExecutionEvent):
                     result["stage"] = "execution_event"
@@ -1366,6 +1402,8 @@ def ctrader_small_order():
                     if hasattr(payload, "executionType"):
                         result["execution_type"] = str(payload.executionType)
 
+                    finished.set()
+
                 elif isinstance(payload, ProtoOAOrderErrorEvent):
                     result["stage"] = "order_error"
                     result["error"] = str(payload.errorCode)
@@ -1373,29 +1411,36 @@ def ctrader_small_order():
                     if hasattr(payload, "description"):
                         result["description"] = str(payload.description)
 
+                    finished.set()
+
             except Exception as e:
                 result["stage"] = "callback_error"
                 result["error"] = str(e)
+                finished.set()
 
+        client.setConnectedCallback(connected)
+        client.setDisconnectedCallback(disconnected)
         client.setMessageReceivedCallback(on_message)
+
+        result["stage"] = "starting_service"
         client.startService()
 
-        auth = ProtoOAApplicationAuthReq()
-        auth.clientId = client_id
-        auth.clientSecret = client_secret
-
-        result["stage"] = "auth_sent"
-        client.send(auth)
-
-        for _ in range(100):
-            if result["ok"] or "error" in result:
-                break
-            time.sleep(0.1)
-
-        client.stopService()
+        # Wait up to 15 seconds
+        finished.wait(15)
 
         if not result["ok"] and "error" not in result:
-            result["error"] = "No cTrader response received before timeout"
+            result["error"] = "cTrader response timeout"
+
+        try:
+            client.stopService()
+        except Exception:
+            pass
+
+        try:
+            if reactor.running:
+                reactor.callFromThread(reactor.stop)
+        except Exception:
+            pass
 
         return result
 
@@ -1405,7 +1450,6 @@ def ctrader_small_order():
             "account_id": account_id,
             "symbol": "EURUSD",
             "volume": 1000,
+            "stage": "exception",
             "error": str(e)
         }, 500
-
-
