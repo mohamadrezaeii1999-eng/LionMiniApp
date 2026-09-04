@@ -1313,7 +1313,8 @@ def ctrader_small_order():
             ProtoOAAccountAuthReq,
             ProtoOAAccountAuthRes,
             ProtoOANewOrderReq,
-            ProtoOANewOrderRes
+            ProtoOAExecutionEvent,
+            ProtoOAOrderErrorEvent
         )
 
         client = Client(
@@ -1345,9 +1346,18 @@ def ctrader_small_order():
                 req.volume = 1000
                 client.send(req)
 
-            elif isinstance(payload, ProtoOANewOrderRes):
-                result["ok"] = True
-                result["order_id"] = str(payload.order.orderId)
+            elif isinstance(payload, ProtoOAExecutionEvent):
+                if payload.HasField("order"):
+                    result["ok"] = True
+                    result["order_id"] = str(payload.order.orderId)
+                    result["execution_type"] = str(payload.executionType)
+                elif payload.HasField("errorCode"):
+                    result["error"] = str(payload.errorCode)
+
+            elif isinstance(payload, ProtoOAOrderErrorEvent):
+                result["error"] = str(payload.errorCode)
+                if payload.HasField("description"):
+                    result["description"] = str(payload.description)
 
         client.setMessageReceivedCallback(on_message)
 
