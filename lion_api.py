@@ -1515,7 +1515,6 @@ def ctrader_symbol_lookup():
         client.setMessageReceivedCallback(on_message)
         client.startService()
 
-        client.startService()
 
         thread = threading.Thread(
             target=reactor.run,
