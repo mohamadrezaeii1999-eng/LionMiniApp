@@ -636,6 +636,16 @@ def ctrader_ai_execute(symbol, signal, entry, stop_loss, take_profit):
                     result["ok"] = False
                     result["action"] = "REJECTED"
                     result["error"] = getattr(payload, "description", str(payload))
+
+                    CTRADER_LAST_AUTO_STATUS.update({
+                        "status": "rejected",
+                        "message": "❌ سفارش cTrader رد شد",
+                        "symbol": symbol,
+                        "signal": signal,
+                        "entry": entry,
+                        "stop_loss": stop_loss,
+                        "take_profit": take_profit
+                    })
                     result["error_code"] = getattr(payload, "errorCode", "")
 
                     reactor.callFromThread(client_obj.stopService)
