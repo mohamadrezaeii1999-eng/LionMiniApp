@@ -1316,6 +1316,11 @@ document.addEventListener("DOMContentLoaded", function(){
                 }
             );
 
+            // فرصت برای اسکن تازه Lion AI V3.7
+            await new Promise(function(resolve) {
+                setTimeout(resolve, 30000);
+            });
+
             const response = await fetch(
                 LION_PAPER_API + "/ctrader/ai-auto?t=" + Date.now(),
                 {

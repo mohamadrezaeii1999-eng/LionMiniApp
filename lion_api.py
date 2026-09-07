@@ -809,7 +809,7 @@ def ctrader_ai_auto_route():
 import threading
 import time
 
-AUTO_SCAN_INTERVAL = 600
+AUTO_SCAN_INTERVAL = 300
 AUTO_SCAN_ENABLED = True
 
 
