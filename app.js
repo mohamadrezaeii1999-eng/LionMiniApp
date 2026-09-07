@@ -1692,7 +1692,14 @@ async function loadLionWallet() {
 
             if (trade.status === "open") {
                 status.textContent =
-                    "🟢 معامله در cTrader Demo باز شد";
+                    "🟢 " + (trade.signal || "TRADE") +
+                    " " + (trade.symbol || "") +
+                    " | Entry: " + (trade.entry ?? "-") +
+                    " | SL: " + (trade.stop_loss ?? "-") +
+                    " | TP: " + (trade.take_profit ?? "-");
+            } else if (trade.status === "rejected") {
+                status.textContent =
+                    "❌ سفارش cTrader رد شد";
             } else {
                 status.textContent =
                     "⏳ منتظر سیگنال Lion AI";
