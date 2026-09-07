@@ -1908,3 +1908,28 @@ def ctrader_small_order():
     return result
 
 
+
+# ============================================================
+# cTrader DEMO - LAST AUTO TRADE STATUS
+# ============================================================
+
+CTRADER_LAST_AUTO_STATUS = {
+    "status": "waiting",
+    "message": "⏳ منتظر سیگنال Lion AI",
+    "symbol": None,
+    "signal": None,
+    "entry": None,
+    "stop_loss": None,
+    "take_profit": None,
+    "order_id": None,
+    "position_id": None
+}
+
+@app.get("/ctrader/auto-status")
+def ctrader_auto_status():
+    return jsonify({
+        "ok": True,
+        "mode": "cTrader DEMO",
+        "trade": CTRADER_LAST_AUTO_STATUS
+    })
+
