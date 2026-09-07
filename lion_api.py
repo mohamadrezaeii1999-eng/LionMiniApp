@@ -616,6 +616,16 @@ def ctrader_ai_execute(symbol, signal, entry, stop_loss, take_profit):
                     result["ok"] = True
                     result["action"] = "OPEN"
                     result["message"] = "AI signal sent to cTrader Demo"
+
+                    CTRADER_LAST_AUTO_STATUS.update({
+                        "status": "open",
+                        "message": "🟢 معامله در cTrader Demo باز شد",
+                        "symbol": symbol,
+                        "signal": signal,
+                        "entry": entry,
+                        "stop_loss": stop_loss,
+                        "take_profit": take_profit
+                    })
                     result["execution"] = str(payload)
 
                     CTRADER_AI_LAST_TRADE[trade_key] = time.time()
