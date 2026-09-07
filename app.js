@@ -1670,3 +1670,41 @@ async function loadLionWallet() {
         info.textContent = "اتصال به cTrader برقرار نشد";
     }
 }
+
+/* ============================================================
+   cTrader DEMO - LIVE AUTO STATUS
+   ============================================================ */
+(function () {
+    const LION_CTRADER_API = "https://lionminiapp-production-a934.up.railway.app";
+
+    window.lionLoadCTraderAutoStatus = async function () {
+        try {
+            const response = await fetch(
+                LION_CTRADER_API + "/ctrader/auto-status?t=" + Date.now(),
+                { cache: "no-store" }
+            );
+
+            const data = await response.json();
+            const trade = data.trade || {};
+            const status = document.getElementById("autoStatus");
+
+            if (!status) return;
+
+            if (trade.status === "open") {
+                status.textContent =
+                    "🟢 معامله در cTrader Demo باز شد";
+            } else {
+                status.textContent =
+                    "⏳ منتظر سیگنال Lion AI";
+            }
+        } catch (e) {
+            console.log("cTrader status error:", e);
+        }
+    };
+
+    window.lionLoadCTraderAutoStatus();
+
+    setInterval(function () {
+        window.lionLoadCTraderAutoStatus();
+    }, 10000);
+})();
