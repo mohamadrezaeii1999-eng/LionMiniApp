@@ -1305,13 +1305,21 @@ document.addEventListener("DOMContentLoaded", function(){
 
         try {
 
-            const response = await fetch(
+            await fetch(
                 LION_PAPER_API + "/paper/start?t=" + Date.now(),
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
+                    cache: "no-store"
+                }
+            );
+
+            const response = await fetch(
+                LION_PAPER_API + "/ctrader/ai-auto?t=" + Date.now(),
+                {
+                    method: "GET",
                     cache: "no-store"
                 }
             );
