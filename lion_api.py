@@ -601,6 +601,7 @@ def ctrader_ai_execute(symbol, signal, entry, stop_loss, take_profit):
                     # cTrader volume = 0.01 unit
                     # 100000 = 1000 units = حداقل مجاز حساب فعلی
                     req.volume = 100000
+                    req.label = "LION_AI"
 
                     # SL / TP به صورت قیمت مطلق
                     if float(stop_loss) > 0:
@@ -1952,4 +1953,619 @@ def ctrader_auto_status():
         "mode": "cTrader DEMO",
         "trade": CTRADER_LAST_AUTO_STATUS
     })
+
+
+
+
+# ============================================================
+# 🦁 SMART PROFIT RUNNER — REAL cTrader DEMO
+# ============================================================
+
+SMART_RUNNER_ENABLED = True
+SMART_RUNNER_INTERVAL = 15
+SMART_RUNNER_LABEL = "LION_AI"
+
+SMART_LOCK_TRIGGER_R = 1.0
+SMART_LOCK_R = 0.20
+
+SMART_TRAIL_TRIGGER_R = 1.5
+SMART_TRAIL_DISTANCE_R = 0.70
+
+SMART_LAST_SL = {}
+
+
+def smart_ctrader_cycle():
+
+    token = os.getenv("CTRADER_ACCESS_TOKEN")
+    client_id = os.getenv("CTRADER_CLIENT_ID")
+    client_secret = os.getenv("CTRADER_CLIENT_SECRET")
+    account_id = os.getenv("CTRADER_ACCOUNT_ID") or "48501253"
+
+    if not all([token, client_id, client_secret, account_id]):
+        return {
+            "ok": False,
+            "action": "ERROR",
+            "message": "cTrader credentials incomplete"
+        }
+
+    try:
+        from ctrader_open_api import Client, Protobuf, TcpProtocol
+        from ctrader_open_api.messages.OpenApiMessages_pb2 import (
+            ProtoOAApplicationAuthReq,
+            ProtoOAApplicationAuthRes,
+            ProtoOAAccountAuthReq,
+            ProtoOAAccountAuthRes,
+            ProtoOAReconcileReq,
+            ProtoOAReconcileRes,
+            ProtoOASubscribeSpotsReq,
+            ProtoOASpotEvent,
+            ProtoOAAmendPositionSLTPReq,
+            ProtoOAExecutionEvent,
+            ProtoOAOrderErrorEvent,
+        )
+        from twisted.internet import reactor
+
+        client = Client(
+            "demo.ctraderapi.com",
+            5035,
+            TcpProtocol
+        )
+
+        result = {
+            "ok": True,
+            "action": "IDLE",
+            "managed": 0,
+            "message": "No LION_AI position"
+        }
+
+        state = {
+            "positions": [],
+            "done": False,
+        }
+
+        def stop_client():
+            try:
+                reactor.callFromThread(client.stopService)
+            except Exception:
+                pass
+
+        def on_error(failure):
+            result["ok"] = False
+            result["action"] = "ERROR"
+            result["message"] = str(failure)
+            state["done"] = True
+            stop_client()
+
+        def amend_sl(position, new_sl):
+
+            req = ProtoOAAmendPositionSLTPReq()
+
+            req.ctidTraderAccountId = int(account_id)
+            req.positionId = int(position.positionId)
+            req.stopLoss = float(new_sl)
+
+            old_tp = float(
+                getattr(position, "takeProfit", 0) or 0
+            )
+
+            if old_tp > 0:
+                req.takeProfit = old_tp
+
+            client.send(req).addErrback(on_error)
+
+        def manage_position(position, bid, ask):
+
+            try:
+                label = str(
+                    getattr(
+                        position.tradeData,
+                        "label",
+                        ""
+                    ) or ""
+                )
+
+                if label != SMART_RUNNER_LABEL:
+                    return
+
+                symbol_id = int(
+                    position.tradeData.symbolId
+                )
+
+                side = int(
+                    position.tradeData.tradeSide
+                )
+
+                entry = float(
+                    getattr(position, "price", 0) or 0
+                )
+
+                if entry <= 0:
+                    return
+
+                if not bid or not ask:
+                    return
+
+                BUY = 1
+                SELL = 2
+
+                if side == BUY:
+                    current = float(bid)
+                    direction = 1
+                elif side == SELL:
+                    current = float(ask)
+                    direction = -1
+                else:
+                    return
+
+                old_sl = float(
+                    getattr(position, "stopLoss", 0) or 0
+                )
+
+                # ریسک اولیه
+                if direction == 1:
+
+                    if 0 < old_sl < entry:
+                        risk = entry - old_sl
+                    else:
+                        risk = entry * 0.0005
+
+                else:
+
+                    if old_sl > entry:
+                        risk = old_sl - entry
+                    else:
+                        risk = entry * 0.0005
+
+                if risk <= 0:
+                    return
+
+                profit_distance = (
+                    current - entry
+                ) * direction
+
+                profit_r = profit_distance / risk
+
+                result["managed"] += 1
+                result["position_id"] = str(
+                    position.positionId
+                )
+                result["symbol_id"] = symbol_id
+                result["entry"] = entry
+                result["current"] = current
+                result["profit_r"] = round(
+                    profit_r,
+                    3
+                )
+
+                # ==========================================
+                # +1R -> قفل 0.20R سود
+                # ==========================================
+
+                if profit_r >= SMART_LOCK_TRIGGER_R:
+
+                    if direction == 1:
+
+                        target_sl = (
+                            entry +
+                            risk * SMART_LOCK_R
+                        )
+
+                        valid = (
+                            target_sl < current
+                        )
+
+                        should_move = (
+                            old_sl <= 0 or
+                            target_sl > old_sl
+                        )
+
+                    else:
+
+                        target_sl = (
+                            entry -
+                            risk * SMART_LOCK_R
+                        )
+
+                        valid = (
+                            target_sl > 0 and
+                            target_sl > current
+                        )
+
+                        should_move = (
+                            old_sl <= 0 or
+                            target_sl < old_sl
+                        )
+
+                    if valid and should_move:
+
+                        rounded = round(
+                            target_sl,
+                            5
+                        )
+
+                        if SMART_LAST_SL.get(
+                            int(position.positionId)
+                        ) != rounded:
+
+                            amend_sl(
+                                position,
+                                target_sl
+                            )
+
+                            SMART_LAST_SL[
+                                int(position.positionId)
+                            ] = rounded
+
+                            result["action"] = "LOCK_PROFIT"
+                            result["new_sl"] = target_sl
+                            result["message"] = (
+                                "🟢 سود قفل شد"
+                            )
+
+                # ==========================================
+                # +1.5R -> trailing
+                # ==========================================
+
+                if profit_r >= SMART_TRAIL_TRIGGER_R:
+
+                    if direction == 1:
+
+                        target_sl = (
+                            current -
+                            risk * SMART_TRAIL_DISTANCE_R
+                        )
+
+                        target_sl = max(
+                            target_sl,
+                            entry + risk * SMART_LOCK_R
+                        )
+
+                        valid = (
+                            target_sl < current
+                        )
+
+                        should_move = (
+                            old_sl <= 0 or
+                            target_sl > old_sl
+                        )
+
+                    else:
+
+                        target_sl = (
+                            current +
+                            risk * SMART_TRAIL_DISTANCE_R
+                        )
+
+                        target_sl = min(
+                            target_sl,
+                            entry - risk * SMART_LOCK_R
+                        )
+
+                        valid = (
+                            target_sl > current
+                        )
+
+                        should_move = (
+                            old_sl <= 0 or
+                            target_sl < old_sl
+                        )
+
+                    if valid and should_move:
+
+                        rounded = round(
+                            target_sl,
+                            5
+                        )
+
+                        if SMART_LAST_SL.get(
+                            int(position.positionId)
+                        ) != rounded:
+
+                            amend_sl(
+                                position,
+                                target_sl
+                            )
+
+                            SMART_LAST_SL[
+                                int(position.positionId)
+                            ] = rounded
+
+                            result["action"] = "TRAILING"
+                            result["new_sl"] = target_sl
+                            result["message"] = (
+                                "🚀 trailing سود فعال شد"
+                            )
+
+            except Exception as exc:
+
+                result["ok"] = False
+                result["action"] = "ERROR"
+                result["message"] = str(exc)
+
+        def on_message(client_obj, message):
+
+            try:
+
+                payload = Protobuf.extract(message)
+
+                if isinstance(
+                    payload,
+                    ProtoOAApplicationAuthRes
+                ):
+
+                    req = ProtoOAAccountAuthReq()
+
+                    req.ctidTraderAccountId = int(
+                        account_id
+                    )
+
+                    req.accessToken = token
+
+                    client_obj.send(
+                        req
+                    ).addErrback(on_error)
+
+                elif isinstance(
+                    payload,
+                    ProtoOAAccountAuthRes
+                ):
+
+                    req = ProtoOAReconcileReq()
+
+                    req.ctidTraderAccountId = int(
+                        account_id
+                    )
+
+                    req.returnProtectionOrders = False
+
+                    client_obj.send(
+                        req
+                    ).addErrback(on_error)
+
+                elif isinstance(
+                    payload,
+                    ProtoOAReconcileRes
+                ):
+
+                    state["positions"] = list(
+                        payload.position
+                    )
+
+                    lion_positions = [
+                        p for p in state["positions"]
+                        if str(
+                            getattr(
+                                p.tradeData,
+                                "label",
+                                ""
+                            ) or ""
+                        ) == SMART_RUNNER_LABEL
+                    ]
+
+                    if not lion_positions:
+
+                        result["message"] = (
+                            "No LION_AI open position"
+                        )
+
+                        state["done"] = True
+                        stop_client()
+                        return
+
+                    symbol_ids = sorted({
+                        int(p.tradeData.symbolId)
+                        for p in lion_positions
+                    })
+
+                    req = ProtoOASubscribeSpotsReq()
+
+                    req.ctidTraderAccountId = int(
+                        account_id
+                    )
+
+                    req.symbolId.extend(
+                        symbol_ids
+                    )
+
+                    req.subscribeToSpotTimestamp = True
+
+                    client_obj.send(
+                        req
+                    ).addErrback(on_error)
+
+                elif isinstance(
+                    payload,
+                    ProtoOASpotEvent
+                ):
+
+                    symbol_id = int(
+                        payload.symbolId
+                    )
+
+                    bid_raw = getattr(
+                        payload,
+                        "bid",
+                        0
+                    )
+
+                    ask_raw = getattr(
+                        payload,
+                        "ask",
+                        0
+                    )
+
+                    bid = (
+                        float(bid_raw) / 100000.0
+                        if bid_raw
+                        else None
+                    )
+
+                    ask = (
+                        float(ask_raw) / 100000.0
+                        if ask_raw
+                        else None
+                    )
+
+                    for position in state["positions"]:
+
+                        if int(
+                            position.tradeData.symbolId
+                        ) == symbol_id:
+
+                            manage_position(
+                                position,
+                                bid,
+                                ask
+                            )
+
+                    state["done"] = True
+                    stop_client()
+
+                elif isinstance(
+                    payload,
+                    ProtoOAExecutionEvent
+                ):
+
+                    result["execution"] = str(
+                        payload
+                    )
+
+                elif isinstance(
+                    payload,
+                    ProtoOAOrderErrorEvent
+                ):
+
+                    result["ok"] = False
+                    result["action"] = "REJECTED"
+
+                    result["message"] = getattr(
+                        payload,
+                        "description",
+                        str(payload)
+                    )
+
+                    state["done"] = True
+                    stop_client()
+
+            except Exception as exc:
+
+                result["ok"] = False
+                result["action"] = "ERROR"
+                result["message"] = str(exc)
+
+                state["done"] = True
+                stop_client()
+
+        def connected(client_obj):
+
+            req = ProtoOAApplicationAuthReq()
+
+            req.clientId = client_id
+            req.clientSecret = client_secret
+
+            client_obj.send(
+                req
+            ).addErrback(on_error)
+
+        client.setConnectedCallback(
+            connected
+        )
+
+        client.setMessageReceivedCallback(
+            on_message
+        )
+
+        client.startService()
+
+        if not reactor.running:
+
+            threading.Thread(
+                target=reactor.run,
+                kwargs={
+                    "installSignalHandlers": False
+                },
+                daemon=True
+            ).start()
+
+        deadline = time.time() + 12
+
+        while time.time() < deadline:
+
+            if state["done"]:
+                break
+
+            time.sleep(0.1)
+
+        if not state["done"]:
+
+            result["ok"] = False
+            result["action"] = "TIMEOUT"
+            result["message"] = (
+                "cTrader response timeout"
+            )
+
+            stop_client()
+
+        return result
+
+    except Exception as exc:
+
+        return {
+            "ok": False,
+            "action": "ERROR",
+            "message": str(exc)
+        }
+
+
+def smart_profit_runner():
+
+    print(
+        "🦁 SMART PROFIT RUNNER — "
+        "REAL cTrader DEMO STARTED"
+    )
+
+    while SMART_RUNNER_ENABLED:
+
+        try:
+
+            result = smart_ctrader_cycle()
+
+            if result.get("managed", 0) > 0:
+
+                print(
+                    "SMART RUNNER:",
+                    result.get("action"),
+                    result.get("message", ""),
+                    "R=",
+                    result.get("profit_r", "-"),
+                    "SL=",
+                    result.get("new_sl", "-")
+                )
+
+        except Exception as exc:
+
+            print(
+                "SMART RUNNER ERROR:",
+                exc
+            )
+
+        time.sleep(
+            SMART_RUNNER_INTERVAL
+        )
+
+
+try:
+
+    threading.Thread(
+        target=smart_profit_runner,
+        daemon=True,
+        name="smart-profit-runner"
+    ).start()
+
+except Exception as exc:
+
+    print(
+        "SMART RUNNER START ERROR:",
+        exc
+    )
 
