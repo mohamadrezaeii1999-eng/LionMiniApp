@@ -1342,7 +1342,7 @@ document.addEventListener("DOMContentLoaded", function(){
             }
 
             paperStatus("🟢 در حال اجرا");
-            paperMode("PAPER • ON");
+            paperMode("cTrader DEMO • ON");
 
             await window.lionLoadPaperStatus();
 
@@ -1351,7 +1351,7 @@ document.addEventListener("DOMContentLoaded", function(){
             console.error("🦁 PAPER START ERROR:", error);
 
             paperStatus("🔴 خطا");
-            paperMode("PAPER • OFF");
+            paperMode("cTrader DEMO • OFF");
         }
 
         return false;
@@ -1393,7 +1393,7 @@ document.addEventListener("DOMContentLoaded", function(){
             }
 
             paperStatus("⚪ متوقف");
-            paperMode("PAPER • OFF");
+            paperMode("cTrader DEMO • OFF");
 
             await window.lionLoadPaperStatus();
 
@@ -1429,12 +1429,12 @@ document.addEventListener("DOMContentLoaded", function(){
             if (data.enabled === true) {
 
                 paperStatus("🟢 در حال اجرا");
-                paperMode("PAPER • ON");
+                paperMode("cTrader DEMO • ON");
 
             } else {
 
                 paperStatus("⚪ آماده");
-                paperMode("PAPER • OFF");
+                paperMode("cTrader DEMO • OFF");
             }
 
             if (data.wallet) {
@@ -1484,7 +1484,7 @@ document.addEventListener("DOMContentLoaded", function(){
              */
             if (scanner.enabled === false) {
 
-                paperMode("PAPER • OFF");
+                paperMode("cTrader DEMO • OFF");
 
                 if (scanner.worker_status === "disabled") {
                     paperStatus("⚪ آماده");
@@ -1500,7 +1500,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 scanner.worker_status === "running" ||
                 scanner.enabled === true
             ) {
-                paperMode("PAPER • ON");
+                paperMode("cTrader DEMO • ON");
             }
 
             /*
